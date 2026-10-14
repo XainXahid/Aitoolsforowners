@@ -10,13 +10,11 @@
   const bySlug = Object.fromEntries(STACKS.map(s => [s.slug, s]));
   const ARR = '<svg class="arr" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>';
 
-  // Starting monthly cost of a stack: sum of known prices, plus a count of "check site" tools.
-  const cost = s => {
-    let total = 0, unk = 0;
-    s.tools.forEach(t => { t.num === '' ? unk++ : (total += +t.num); });
-    return { total, unk };
-  };
   const money = n => '$' + (Number.isInteger(n) ? n : n.toFixed(2));
+  // Setup time: "30 min" / "1 hr" -> minutes, and back to a friendly label.
+  const mins = s => { const [n, u] = s.split(' '); return Math.round(+n * (u.startsWith('hr') ? 60 : 1)); };
+  const fmtMins = m => { const h = Math.floor(m / 60), r = m % 60; return h ? `${h} hr${r ? ` ${r} min` : ''}` : `${r} min`; };
+  const setupOf = s => s.tools.reduce((a, t) => a + mins(t.setup), 0);
   const short = n => n.replace(' Online', '').replace('.ai', '');
 
   /* ---------- year + clock ---------- */
@@ -71,9 +69,8 @@
     const strike = '<svg class="pad__strike" viewBox="0 0 300 16" preserveAspectRatio="none" aria-hidden="true"><path d="M2 10 C 40 4, 70 13, 110 8 S 180 4, 220 9 S 270 13, 298 6"/></svg>';
     padList.innerHTML = PAD.map(([task, slug]) => {
       const s = bySlug[slug]; if (!s) return '';
-      const c = cost(s);
       const tools = s.tools.slice(0, 2).map(t => short(t.name)).join(' + ');
-      return `<li><span class="pad__task">${esc(task)}${strike}</span><span class="pad__note">→ ${esc(tools)} <b>${money(c.total)}/mo${c.unk ? '+' : ''}</b></span></li>`;
+      return `<li><span class="pad__task">${esc(task)}${strike}</span><span class="pad__note">→ ${esc(tools)} <b>${fmtMins(setupOf(s))} setup</b></span></li>`;
     }).join('');
     const items = $$('li', padList);
     if (reduce) items.forEach(li => li.classList.add('done'));
@@ -133,29 +130,35 @@
       })));
     const row = t => `<li class="receipt__row" data-id="${t.id}" data-role="${t.role}" data-price="${t.num}" data-free="${t.free}"${t.role === 'alt' ? ' hidden' : ''}>
         <a class="receipt__name" href="${esc(t.url)}" rel="sponsored nofollow noopener" target="_blank">${esc(t.name)}${ARR}</a>
-        <span class="receipt__price" data-o="${esc(t.price)}">${esc(t.price)}</span>
+        <span class="receipt__price" data-o="${esc(t.price)}" data-setup="${esc(t.setup)}">${esc(t.setup)}</span>
         <p class="receipt__why">${esc(t.why)}</p>
-        <span class="receipt__meta"><span class="chip">Setup ${esc(t.setup)}</span><span class="chip">${esc(t.diff)}</span>${t.role !== 'tool' ? '<span class="chip chip--ai">AI assistant</span>' : ''}${t.free === '1' ? '<span class="chip">Free plan</span>' : ''}</span>
+        <span class="receipt__meta"><span class="chip">${esc(t.diff)}</span>${t.role !== 'tool' ? '<span class="chip chip--ai">AI assistant</span>' : ''}${t.free === '1' ? '<span class="chip">Free plan</span>' : ''}</span>
       </li>`;
     const asst = AORD.map((a, i) => `<button type="button" class="asst__item" data-a="${a}" aria-pressed="false">
-        <span class="asst__name">${esc(ASST[a].name)}</span><span class="asst__price">${esc(ASST[a].plan)}: ${esc(ASST[a].price)}</span>
+        <span class="asst__name">${esc(ASST[a].name)}</span><span class="asst__price">${ASST[a].free === '1' ? 'Free plan available' : 'Paid plans'}</span>
         <p class="asst__how">${esc(s.how[i][0])} <em>Add-ons: ${esc(s.how[i][1])}.</em></p></button>`).join('');
     const no = String(STACKS.indexOf(s) + 1).padStart(3, '0');
     out.innerHTML = `<div class="res" data-default="${dflt}">
       <div class="res__left">
         <p class="res__eyebrow">${isExample ? '<b>Example</b> Type your own task above' : 'Your A.T.F.O. stack'}</p>
         <h2 class="res__title">${esc(s.label)}</h2>
-        <p class="res__task">The tools that handle ${esc(s.task)}, with starting prices, setup time and difficulty.</p>
-        <div class="res__total"><small>Estimated monthly cost</small><span class="res__num"><span class="t-val">$0</span><sub>/mo</sub></span><p class="res__unk"></p><p class="res__drop"></p></div>
+        <p class="res__task">The tools that handle ${esc(s.task)}, why each one is there, setup time and difficulty.</p>
+        <div class="res__total"><small>Ready to use in about</small><span class="res__num"><span class="t-time">${fmtMins(setupOf(s))}</span></span><p class="res__unk res__sub">${s.tools.length} tools · ${s.tools.some(t => t.diff === 'Medium') ? 'Easy to medium' : 'All easy'} setup</p></div>
+        <button type="button" class="costs-btn" aria-expanded="false" aria-controls="costs">See monthly costs <span aria-hidden="true">+</span></button>
+        <div class="costs" id="costs" hidden>
+        <div class="costs__sum"><small>Estimated monthly cost</small><strong class="t-val">$0</strong><span>/mo</span></div>
+        <p class="res__unk t-unk"></p><p class="res__drop"></p>
         <div class="res__ctrl">
           <label for="f-budget">Budget<select id="f-budget" class="f-budget"><option value="any">Any budget</option><option value="0">Free only</option><option value="25">Under $25/mo</option><option value="50">Under $50/mo</option></select></label>
           <label for="f-asst">AI assistant<select id="f-asst" class="f-asst"><option value="">No preference</option>${AORD.map(a => `<option value="${a}">${esc(ASST[a].name)}</option>`).join('')}</select></label>
         </div>
+        <p class="costs__note">Starting prices. Many tools have free plans, and prices change, so check each tool's site.</p>
+        </div>
       </div>
       <div class="receipt">
-        <div class="receipt__head"><span>Stack no. ${no}</span><span>Starting prices</span></div>
+        <div class="receipt__head"><span>Stack no. ${no}</span><span class="r-col">Setup time</span></div>
         <ul class="receipt__list">${rows.map(row).join('')}</ul>
-        <div class="receipt__sum"><span>Total / month</span><strong class="t-val">$0</strong></div>
+        <div class="receipt__sum"><span class="r-sum">Total setup</span><strong class="r-tot">~${fmtMins(setupOf(s))}</strong></div>
         <div class="receipt__bar" aria-hidden="true"></div>
       </div>
       <div class="res__lower">
@@ -172,6 +175,13 @@
     $$('.asst__item', box).forEach(b => b.addEventListener('click', () => {
       const sel = $('.f-asst', box); sel.value = sel.value === b.dataset.a ? '' : b.dataset.a; sync();
     }));
+    const cb = $('.costs-btn', box), cp = $('.costs', box);
+    cb.addEventListener('click', () => {
+      const open = cb.getAttribute('aria-expanded') !== 'true';
+      cb.setAttribute('aria-expanded', String(open)); cp.hidden = !open; box.classList.toggle('show-costs', open);
+      cb.firstChild.textContent = open ? 'Hide monthly costs ' : 'See monthly costs ';
+      sync();
+    });
     sync(); bindMagnets(box);
   };
 
@@ -179,21 +189,29 @@
   function apply(b) {
     const bud = $('.f-budget', b).value, a = $('.f-asst', b).value;
     const lim = bud === 'any' ? Infinity : +bud;
-    let total = 0, unk = 0; const dropped = [];
+    const showCosts = b.classList.contains('show-costs');
+    let total = 0, unk = 0, setup = 0; const dropped = [];
     $$('.receipt__row', b).forEach(r => {
       const id = r.dataset.id, role = r.dataset.role;
       let show = role === 'tool' || (a ? id === a : role === 'assistant');
       const p = r.dataset.price === '' ? null : +r.dataset.price, free = r.dataset.free === '1';
-      const pc = $('.receipt__price', r); pc.textContent = pc.dataset.o; pc.classList.remove('is-free');
-      if (show) {
+      const pc = $('.receipt__price', r); pc.textContent = showCosts ? pc.dataset.o : pc.dataset.setup; pc.classList.remove('is-free');
+      if (show && !showCosts) { /* budget only applies once costs are shown */ }
+      else if (show) {
         if (p === null) { if (lim === 0 && !free) { show = false; dropped.push(r.querySelector('a').textContent); } else unk++; }
         else if (total + p > lim) { if (free) { pc.textContent = 'Free plan'; pc.classList.add('is-free'); } else { show = false; dropped.push(r.querySelector('a').textContent); } }
         else total += p;
       }
       r.hidden = !show;
+      if (show) setup += mins(pc.dataset.setup);
+      if (show && showCosts && pc.textContent === pc.dataset.o && r.dataset.price === '') pc.textContent = 'Check site';
     });
     $$('.t-val', b).forEach(el => countTo(el, total));
-    $('.res__unk', b).textContent = unk ? `Plus ${unk} tool${unk > 1 ? 's' : ''} marked "check site".` : '';
+    $('.r-col', b).textContent = showCosts ? 'Starting prices' : 'Setup time';
+    $('.r-sum', b).textContent = showCosts ? 'Total / month' : 'Total setup';
+    $('.r-tot', b).textContent = showCosts ? money(total) : '~' + fmtMins(setup);
+    $('.t-time', b).textContent = fmtMins(setup);
+    $('.t-unk', b).textContent = unk ? `Plus ${unk} tool${unk > 1 ? 's' : ''} marked "check site".` : '';
     $('.res__drop', b).textContent = dropped.length ? `Left out to fit your budget: ${dropped.join(', ')}.` : '';
     $$('.asst__item', b).forEach(x => x.setAttribute('aria-pressed', String(x.dataset.a === a)));
   }
@@ -268,12 +286,11 @@
   const catOf = slug => Object.keys(CAT).find(k => CAT[k].includes(slug)) || 'ops';
   const idx = $('#index'), peek = $('#peek');
   if (idx) {
-    idx.innerHTML = STACKS.map(s => {
-      const c = cost(s);
+    if (!idx.querySelector('li')) idx.innerHTML = STACKS.map(s => {
       return `<li data-cat="${catOf(s.slug)}"><a class="row" href="/best-ai-tools-for-${s.slug}/" data-slug="${s.slug}">
         <span class="row__name">${esc(s.label)}</span>
         <span class="row__tools">${s.tools.map(t => `<span>${esc(t.name)}</span>`).join('')}</span>
-        <span class="row__cost"><small>From</small>${money(c.total)}/mo${c.unk ? '+' : ''}</span>
+        <span class="row__cost"><small>Setup</small>~${fmtMins(setupOf(s))}</span>
         <span class="row__go" aria-hidden="true">${ARR}</span></a></li>`;
     }).join('');
     $$('.pill').forEach(p => p.addEventListener('click', () => {
@@ -288,7 +305,7 @@
       idx.addEventListener('pointerover', e => {
         const a = e.target.closest('.row'); if (!a) return;
         const s = bySlug[a.dataset.slug];
-        peek.innerHTML = `<h4>${esc(s.label)}</h4><ul>${s.tools.map(t => `<li><span>${esc(t.name)}</span><span>${esc(t.price)}</span></li>`).join('')}</ul>`;
+        peek.innerHTML = `<h4>${esc(s.label)}</h4><ul>${s.tools.map(t => `<li><span>${esc(t.name)}</span><span>${esc(t.setup)} · ${esc(t.diff)}</span></li>`).join('')}</ul>`;
         peek.classList.add('on');
         if (!raf) { px = tx; py = ty; loop(); }
       });
@@ -299,14 +316,16 @@
 
   /* ---------- assistant deck ---------- */
   const deck = $('#deck');
-  if (deck) {
+  if (deck && !deck.querySelector('.card')) {
     const KIND = { claude: 'Writer', gemini: 'Workspace native', grokbot: 'Runs on a schedule', chatgpt: 'All-rounder' };
     deck.innerHTML = AORD.map((a, i) => `<button type="button" class="card${i === 0 ? ' is-open' : ''}" data-a="${a}" aria-expanded="${i === 0}">
       <span class="card__k">${esc(KIND[a] || 'Assistant')}</span>
       <span class="card__name">${esc(ASST[a].name)}</span>
-      <span class="card__plan">${esc(ASST[a].plan)} · ${esc(ASST[a].price)}</span>
+      <span class="card__plan">${ASST[a].free === '1' ? 'Free plan available' : 'Paid plans'}</span>
       <span class="card__best">Best for: ${esc(ASST[a].best)}.</span>
       <span class="card__glyph" aria-hidden="true">${esc(ASST[a].name[0])}</span></button>`).join('');
+  }
+  if (deck) {
     const open = c => $$('.card', deck).forEach(x => { x.classList.toggle('is-open', x === c); x.setAttribute('aria-expanded', String(x === c)); });
     $$('.card', deck).forEach(c => {
       c.addEventListener('click', () => open(c));
@@ -319,7 +338,7 @@
   const mt = $('#manifestoText');
   let words = [];
   if (mt) {
-    const marks = new Set(['signup.', 'cost', 'each', 'month,', 'before', 'lunch.']);
+    const marks = new Set(['signup.', 'why', 'before', 'lunch.']);
     mt.innerHTML = mt.textContent.trim().split(/\s+/).map(w => `<span class="w${marks.has(w) ? ' mark' : ''}">${esc(w)}</span>`).join(' ');
     words = $$('.w', mt);
   }
