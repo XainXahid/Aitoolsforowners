@@ -47,12 +47,19 @@
   });
   drawer.addEventListener('click', e => { if (e.target.closest('a')) burger.click(); });
 
-  /* ---------- ticker ---------- */
-  const ticker = $('#ticker');
-  if (ticker) {
-    const names = [...new Set(STACKS.flatMap(s => s.tools.map(t => t.name)))];
-    const html = names.map(n => `<span class="ticker__item">${esc(n)}</span>`).join('');
-    ticker.innerHTML = html + html.replace(/class="ticker__item"/g, 'class="ticker__item" aria-hidden="true"');
+  /* ---------- tool shelf: two rows of tool chips drifting in opposite directions ---------- */
+  const tracks = $$('.shelf__track');
+  if (tracks.length) {
+    const firstTask = {};
+    STACKS.forEach(s => s.tools.forEach(t => { if (!firstTask[t.name]) firstTask[t.name] = s.label; }));
+    const names = Object.keys(firstTask);
+    const chip = (n, hide) => `<span class="tool"${hide ? ' aria-hidden="true"' : ''}><span class="tool__mono" aria-hidden="true">${esc(n[0])}</span><span class="tool__name">${esc(n)}</span><span class="tool__task">${esc(firstTask[n])}</span></span>`;
+    const half = Math.ceil(names.length / 2);
+    [names.slice(0, half), names.slice(half)].forEach((row, i) => {
+      if (!tracks[i]) return;
+      tracks[i].innerHTML = row.map(n => chip(n)).join('') + row.map(n => chip(n, true)).join('');
+    });
+    const cnt = $('#shelfCount'); if (cnt) cnt.textContent = `${names.length} tools across ${STACKS.length} tasks`;
   }
 
   /* ---------- legal pad: chores get crossed off ---------- */
