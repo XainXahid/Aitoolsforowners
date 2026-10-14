@@ -373,44 +373,94 @@
       { slug: 'client-intake', why: 'Intake forms that fill your records automatically save you typing for every new patient.' },
     ],
   };
-  const reportFrame = (url, tag, inner) => `<div class="report"><div class="report__bar"><span class="report__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+  const reportFrame = (url, tag, inner, cls = '') => `<div class="report ${cls}"><div class="report__bar"><span class="report__dots" aria-hidden="true"><i></i><i></i><i></i></span>
       <span class="report__url">${esc(url)}</span>${tag ? `<span class="report__tag">${esc(tag)}</span>` : ''}</div>
       <div class="report__scan" aria-hidden="true"></div><div class="report__in">${inner}</div></div>`;
-  const renderReport = d => {
+  const CHECK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M7 12.5l3.2 3.2L17 9"/></svg>';
+  const renderReport = (d, fresh = false) => {
     const host = d.url ? d.url.replace(/^https?:\/\//, '').replace(/\/$/, '') : 'Google Maps listing';
     const meta = [d.industry, d.platform && `Built on ${d.platform}`, d.maps && d.maps.rating != null && `${d.maps.rating}★ from ${d.maps.reviews} Google reviews`].filter(Boolean);
     const recs = (d.recommendations || []).filter(r => bySlug[r.slug]);
-    scanOut.innerHTML = reportFrame(host, d.example ? 'Example report' : 'Your report', `
-      <div><p class="report__name">${esc(d.name || 'Your business')}</p>${meta.length ? `<div class="report__meta">${meta.map(m => `<span class="chip">${esc(m)}</span>`).join('')}</div>` : ''}</div>
+    const checks = d.checks || [];
+    const spotted = checks.filter(c => c.found).length;
+    const summary = checks.length
+      ? `We spotted ${spotted} of ${checks.length} things on your homepage, and found ${recs.length} place${recs.length === 1 ? '' : 's'} to start.`
+      : `${recs.length} popular starting point${recs.length === 1 ? '' : 's'} for you.`;
+    // A finished scan opens with a "ready" banner; everything below it animates in, in order.
+    const ready = fresh ? `<div class="report__ready" tabindex="-1" id="scanReady">
+        <span class="ready__icon">${CHECK_SVG}<span class="ready__burst" aria-hidden="true">${'<i></i>'.repeat(8)}</span></span>
+        <span><strong>Your report is ready</strong><span>${esc(summary)}</span></span></div>` : '';
+    scanOut.innerHTML = reportFrame(host, d.example ? 'Example report' : 'Your report', `${ready}
+      <div class="report__head"><p class="report__name">${esc(d.name || 'Your business')}</p>${meta.length ? `<div class="report__meta">${meta.map(m => `<span class="chip">${esc(m)}</span>`).join('')}</div>` : ''}</div>
       ${d.note ? `<p class="report__note">${esc(d.note)}</p>` : ''}
-      ${d.checks && d.checks.length ? `<div><h3>What we spotted on your homepage</h3><ul class="checks">${d.checks.map(c => `<li class="${c.found ? 'yes' : ''}">${esc(c.label)}<span class="sr">${c.found ? ': found' : ': not spotted'}</span></li>`).join('')}</ul><p class="checks__key"><span class="checks__dot checks__dot--yes"></span>Found <span class="checks__dot"></span>Not spotted</p></div>` : ''}
+      ${checks.length ? `<div><h3>What we spotted on your homepage</h3><ul class="checks">${checks.map((c, i) => `<li class="${c.found ? 'yes' : ''}" style="--i:${i}">${esc(c.label)}<span class="sr">${c.found ? ': found' : ': not spotted'}</span></li>`).join('')}</ul><p class="checks__key"><span class="checks__dot checks__dot--yes"></span>Found <span class="checks__dot"></span>Not spotted</p></div>` : ''}
       ${d.caveat ? `<p class="report__caveat">${esc(d.caveat)}</p>` : ''}
-      ${recs.length ? `<div><h3>${d.checks && d.checks.length ? 'Where to start' : 'Popular starting points'}</h3><ol class="recs">${recs.map(r => {
+      ${recs.length ? `<div><h3>${checks.length ? 'Where to start' : 'Popular starting points'}</h3><ol class="recs">${recs.map((r, i) => {
         const st = bySlug[r.slug];
-        return `<li class="rec"><h4>${esc(st.label)}</h4><p>${esc(r.why)}</p><span class="rec__go"><button type="button" data-show="${st.slug}">Show me this stack</button><a href="/best-ai-tools-for-${st.slug}/">Read the full guide →</a></span></li>`;
-      }).join('')}</ol></div>` : ''}`);
+        return `<li class="rec" style="--i:${i}"><h4>${esc(st.label)}</h4><p>${esc(r.why)}</p><span class="rec__go"><button type="button" data-show="${st.slug}">Show me this stack</button><a href="/best-ai-tools-for-${st.slug}/">Read the full guide →</a></span></li>`;
+      }).join('')}</ol></div>` : ''}`, fresh ? 'is-ready' : '');
   };
-  if (scanOut) {
-    renderReport(EXAMPLE_SCAN);
+  if (scanOut) renderReport(EXAMPLE_SCAN);
+
+  // Bring the report into view (it sits below the form on phones) without jumping if it's already visible.
+  const revealReport = () => {
+    const r = scanOut.getBoundingClientRect();
+    if (r.top < 80 || r.top > innerHeight * 0.45) {
+      scrollTo({ top: scrollY + r.top - 90, behavior: reduce ? 'auto' : 'smooth' });
+    }
+  };
+  const SCAN_STEPS = ['Opening your page', 'Looking for online booking', 'Checking for chat and email signup', 'Looking for reviews and a store', 'Matching you to stacks'];
+  const loadingView = url => reportFrame(url.replace(/^https?:\/\//, ''), 'Scanning', `
+      <div class="scanning"><p class="scanning__title" id="scanStatus">Scanning your business…</p>
+        <div class="scanning__bar" aria-hidden="true"><span></span></div>
+        <ol class="scanning__steps">${SCAN_STEPS.map((t, i) => `<li${i === 0 ? ' class="is-active"' : ''}><span class="step__icon" aria-hidden="true"></span>${esc(t)}</li>`).join('')}</ol></div>`, 'is-loading');
+  // The network call lives in its own function so previews can swap it out.
+  async function runScan(url) {
+    const r = await fetch('/api/scan', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d.ok) throw new Error(d.error || 'The scanner is not available right now. Please try again in a minute.');
+    return d;
   }
+  const wait = ms => new Promise(res => setTimeout(res, ms));
+
   if (scanForm) scanForm.addEventListener('submit', async e => {
     e.preventDefault();
     const url = scanUrl.value.trim();
     if (!url) { scanUrl.focus(); scanUrl.setAttribute('aria-invalid', 'true'); return; }
     scanUrl.removeAttribute('aria-invalid');
-    const btn = scanForm.querySelector('button'); btn.disabled = true;
-    scanOut.innerHTML = reportFrame(url.replace(/^https?:\/\//, ''), 'Scanning', '<p class="report__status" id="scanStatus">Reading your page…</p>');
-    const box = $('.report', scanOut); box.classList.add('is-loading');
-    const steps = ['Reading your page…', 'Looking for online booking…', 'Checking for chat and email signup…', 'Looking for reviews…', 'Matching you to stacks…'];
-    let k = 0; const tk = setInterval(() => { const st = $('#scanStatus'); if (st) st.textContent = steps[++k % steps.length]; }, 1400);
-    try {
-      const r = await fetch('/api/scan', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) });
-      const d = await r.json().catch(() => ({}));
-      if (r.ok && d.ok) { renderReport(d); announce(`Scan finished for ${d.name || url}.`); }
-      else scanOut.innerHTML = reportFrame(url, 'Try again', `<p class="report__note">${esc(d.error || 'The scanner is not available right now. Please try again in a minute.')}</p>`);
-    } catch (_) {
-      scanOut.innerHTML = reportFrame(url, 'Try again', '<p class="report__note">We couldn\'t reach the scanner. Check your connection and try again.</p>');
-    } finally { clearInterval(tk); btn.disabled = false; }
+    const btn = scanForm.querySelector('button'), label = btn.querySelector('span'), btnText = label.textContent;
+    btn.disabled = true; btn.classList.add('is-busy'); label.textContent = 'Scanning…';
+    scanOut.innerHTML = loadingView(url);
+    announce('Scanning your business. This takes a few seconds.');
+    revealReport();
+    // Tick through the steps while we wait, so it's clear something is happening.
+    const lis = $$('.scanning__steps li', scanOut), bar = $('.scanning__bar span', scanOut);
+    let k = 0;
+    const advance = () => {
+      if (k < lis.length - 1) { lis[k].className = 'is-done'; lis[++k].className = 'is-active'; }
+      bar.style.width = Math.min(92, 18 + k * 18) + '%';
+    };
+    requestAnimationFrame(() => { bar.style.width = '18%'; });
+    const tk = setInterval(advance, 900);
+    const t0 = performance.now();
+    let result = null, error = null;
+    try { result = await runScan(url); } catch (err) { error = err.message || 'We couldn\'t reach the scanner. Check your connection and try again.'; }
+    // Let the steps finish so the result doesn't flash in before anyone sees the scan.
+    const minMs = paused ? 0 : 2400;
+    if (performance.now() - t0 < minMs) await wait(minMs - (performance.now() - t0));
+    clearInterval(tk);
+    lis.forEach(li => { li.className = 'is-done'; }); bar.style.width = '100%';
+    if (!paused) await wait(350);
+    btn.disabled = false; btn.classList.remove('is-busy'); label.textContent = btnText;
+    if (result) {
+      renderReport(result, true);
+      announce(`Your report is ready for ${result.name || url}.`);
+      revealReport();
+      const ready = $('#scanReady'); if (ready) ready.focus({ preventScroll: true });
+    } else {
+      scanOut.innerHTML = reportFrame(url, 'Try again', `<p class="report__note">${esc(error)}</p>`, 'is-error');
+      announce(error);
+    }
   });
 
   /* ---------- the week ---------- */
