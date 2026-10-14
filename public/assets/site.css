@@ -3,7 +3,7 @@
    Layout: a 12-column editorial grid that breaks on purpose —
    an off-axis legal pad in the hero, a sticky week calendar,
    a hover-reveal task index and a horizontal assistant deck.
-   Ballpoint blue + cyan highlighter on cool paper.
+   Ballpoint blue + highlighter yellow on cool paper.
    ========================================================= */
 :root{
   --paper:#EDEFF5;      /* page ground, cool paper */
@@ -14,7 +14,7 @@
   --pen:#2B36E8;        /* ballpoint blue accent */
   --on-pen:#FFFFFF;
   --pen-soft:#DDE0FF;
-  --hl:#7FE3F5;         /* cyan highlighter */
+  --hl:#FFE94D;         /* highlighter yellow */
   --on-hl:#12142E;
   --band:#12142E;       /* dark band */
   --band-fg:#EDEFF5;
@@ -41,14 +41,14 @@
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
     --paper:#0B0D22;--sheet:#14173A;--ink:#E8EAF7;--ink-2:#A3A8CC;--rule:#272B55;
-    --pen:#8D96FF;--on-pen:#0B0D22;--pen-soft:#22275E;--hl:#7FE3F5;--on-hl:#12142E;
+    --pen:#8D96FF;--on-pen:#0B0D22;--pen-soft:#22275E;--hl:#FFE94D;--on-hl:#12142E;
     --band:#04050F;--band-fg:#E8EAF7;--band-2:#9599BE;--band-rule:#23264D;--red:#FF6B6F;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
   --paper:#0B0D22;--sheet:#14173A;--ink:#E8EAF7;--ink-2:#A3A8CC;--rule:#272B55;
-  --pen:#8D96FF;--on-pen:#0B0D22;--pen-soft:#22275E;--hl:#7FE3F5;--on-hl:#12142E;
+  --pen:#8D96FF;--on-pen:#0B0D22;--pen-soft:#22275E;--hl:#FFE94D;--on-hl:#12142E;
   --band:#04050F;--band-fg:#E8EAF7;--band-2:#9599BE;--band-rule:#23264D;--red:#FF6B6F;
   color-scheme:dark;
 }
@@ -130,7 +130,7 @@ button,input,select{font:inherit;color:inherit}
 .logo{display:inline-flex;align-items:center;gap:10px;text-decoration:none;margin-right:auto}
 .logo__mark svg{width:30px;height:30px}
 .logo__mark rect{fill:var(--pen)}
-.logo__mark path{fill:none;stroke:var(--hl);stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:24;stroke-dashoffset:0;transition:stroke-dashoffset .6s var(--ease)}
+.logo__mark path{fill:none;stroke:var(--paper);stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:24;stroke-dashoffset:0;transition:stroke-dashoffset .6s var(--ease)}
 .logo:hover .logo__mark path{animation:tick .7s var(--ease)}
 @keyframes tick{from{stroke-dashoffset:24}to{stroke-dashoffset:0}}
 .logo__word{font:800 1.3rem/1 var(--f-display);letter-spacing:.04em;font-variation-settings:"wdth" 90}
@@ -520,7 +520,7 @@ button,input,select{font:inherit;color:inherit}
 .mail__head{padding:18px 22px 14px;border-bottom:1px solid #E3E6F2}
 .mail__from{display:flex;gap:10px;align-items:center;font-size:.9rem}
 .mail__from small{display:block;color:#4A4E72;font-size:.76rem}
-.mail__av{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;background:#2B36E8;color:#7FE3F5;font-weight:800}
+.mail__av{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;background:#2B36E8;color:#FFE94D;font-weight:800}
 .mail__subj{margin:12px 0 0;font:700 1.15rem/1.25 var(--f-display);font-variation-settings:"wdth" 90}
 .mail__body{padding:20px 22px 24px;display:grid;gap:14px}
 .mail__issue{margin:0;font:500 .7rem/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:#2B36E8}
@@ -529,7 +529,7 @@ button,input,select{font:inherit;color:inherit}
 .mail__stack span{padding:6px 10px;border-radius:8px;background:#EEF0FA;font:600 .82rem/1 var(--f-body)}
 .mail__steps{margin:0;padding-left:20px;font-size:.88rem;color:#4A4E72;display:grid;gap:3px}
 .mail__prompt{padding:12px 14px;border-radius:12px;background:#12142E;color:#EDEFF5;font:400 .8rem/1.45 var(--f-mono)}
-.mail__prompt small{display:block;color:#7FE3F5;font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.mail__prompt small{display:block;color:#FFE94D;font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
 .mail__cta{justify-self:start;padding:10px 16px;border-radius:99px;background:#2B36E8;color:#fff;font:600 .88rem/1 var(--f-body)}
 @media (min-width:900px){.signup__grid{grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:64px}}
 
