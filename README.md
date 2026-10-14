@@ -1,32 +1,35 @@
 # A.T.F.O. (AI Tools For Owners): homepage redesign
 
-The new homepage for https://aitoolsforowners.com. It's a plain static site with no build step, so it deploys to Cloudflare Pages as is.
+The new homepage for https://aitoolsforowners.com. It's a plain static site with no build step. Everything the public sees lives in `public/`; the scan API lives in `functions/`.
 
 ## What's here
 
 | Path | What it is |
 | --- | --- |
-| `index.html` | The homepage |
-| `assets/site.css` | All styles (light and dark themes, responsive) |
-| `assets/main.js` | Interactions: stack finder, budget filters, scroll story, task index, assistant deck |
-| `assets/data.js` | Tool stack data (`STACKS`, `ASST`, `AORD`), carried over from the original site's `app.js` |
-| `404.html` | Not-found page |
-| `favicon.svg`, `og.png` | Icon and social share image |
-| `_headers` | Cloudflare Pages response headers |
+| `public/index.html` | The homepage |
+| `public/assets/site.css` | All styles (light and dark themes, responsive) |
+| `public/assets/main.js` | Interactions: stack finder, budget filters, scroll story, task index, assistant deck |
+| `public/assets/data.js` | Tool stack data (`STACKS`, `ASST`, `AORD`), carried over from the original site's `app.js` |
+| `public/404.html` | Not-found page |
+| `public/favicon.svg`, `public/og.png` | Icon and social share image |
+| `public/_headers` | Cloudflare Pages response headers |
 | `design/og-source.html` | Source used to render `og.png` (not linked from the site) |
 | `scripts/build.py` | Regenerates the crawler-readable parts of the site from `assets/data.js` (see below) |
-| `llms.txt`, `llms-full.txt` | Plain-text guides for AI assistants (generated) |
-| `sitemap.xml`, `robots.txt` | Search engine files (generated) |
+| `functions/api/scan.js` | The free business scan (Cloudflare Pages Function at `POST /api/scan`) |
+| `scripts/dev.mjs` | Local preview with the scan working: `node scripts/dev.mjs` → http://localhost:8788 |
+| `newsletter/` | Email newsletter template, builder and the guide for Grok (`newsletter/GROK_NEWSLETTER_GUIDE.md`) |
+| `public/llms.txt`, `public/llms-full.txt` | Plain-text guides for AI assistants (generated) |
+| `public/sitemap.xml`, `public/robots.txt` | Search engine files (generated) |
 
 ## Deploy to Cloudflare Pages (free)
 
 1. Cloudflare dashboard → **Workers & Pages** → **Create** → **Pages** → **Connect to Git**.
 2. Pick this repository and the `main` branch.
-3. Build settings: **Framework preset: None**, **Build command: empty**, **Build output directory: `/`**.
+3. Build settings: **Framework preset: None**, **Build command: empty**, **Build output directory: `public`**.
 4. Save and deploy. You get a free `*.pages.dev` URL.
 5. To use the real domain, open the project → **Custom domains** → add `aitoolsforowners.com`.
 
-Or from a terminal: `npx wrangler pages deploy . --project-name aitoolsforowners`.
+Or from a terminal: `npx wrangler pages deploy public --project-name aitoolsforowners` (run from the repo root so `functions/` deploys too).
 
 ## Before switching the live domain
 
@@ -38,14 +41,30 @@ The current live site has pages and an API that are **not** in this repo. The ho
 - `/tools/`, `/data/tools.json`, `/newsletter/`, `/sponsor/`, `/about/`, `/privacy/`, `/llms.txt`
 - The newsletter endpoint `POST /api/subscribe` (the form sends JSON `{email, company}` and expects `{ok, message}` back)
 
-The simplest path is to drop `index.html`, `assets/`, `404.html`, `favicon.svg`, `og.png` and `_headers` into the existing Cloudflare Pages project, replacing only the old homepage files (`index.html`, `style.css`, `app.js`).
+The simplest path is to copy everything in `public/` into the existing Cloudflare Pages project (replacing the old `index.html`, `style.css`, `app.js`, `llms.txt`, `robots.txt` and `sitemap.xml`) and add `functions/api/scan.js` next to the existing `functions/api/subscribe` code.
 
 ## Editing content
 
-- **Tool stacks, prices, setup steps:** edit `assets/data.js`, then run `python3 scripts/build.py`. The finder, the to-do pad, the week story and the ticker read the data at runtime. The task index, assistant cards, FAQ, structured data, `llms.txt`, `llms-full.txt` and `sitemap.xml` are written into the files by the script, so crawlers see them without running JavaScript.
-- **Task categories** (Sales / Money / Operations / Marketing filters): the `CAT` map in `assets/main.js` and in `scripts/build.py` (keep both the same).
-- **Hero to-do list items:** the `PAD` array in `assets/main.js`.
-- **Week story blocks:** the `WEEK` array in `assets/main.js`.
+- **Tool stacks, prices, setup steps:** edit `public/assets/data.js`, then run `python3 scripts/build.py`. The finder, the to-do pad, the week story and the ticker read the data at runtime. The task index, assistant cards, FAQ, structured data, `llms.txt`, `llms-full.txt` and `sitemap.xml` are written into the files by the script, so crawlers see them without running JavaScript.
+- **Task categories** (Sales / Money / Operations / Marketing filters): the `CAT` map in `public/assets/main.js` and in `scripts/build.py` (keep both the same).
+- **Hero to-do list items:** the `PAD` array in `public/assets/main.js`.
+- **Week story blocks:** the `WEEK` array in `public/assets/main.js`.
+
+## Business scan
+
+Visitors paste a website or Google Maps link. `functions/api/scan.js` reads that public page, checks for online booking, chat, an email signup, a CRM or contact form, reviews, an online store, payments, a blog and social links, guesses the type of business, and returns up to four stacks that fill the gaps. Cloudflare Pages runs anything in `functions/` automatically; no build step is needed.
+
+Optional settings (Cloudflare Pages → your project → Settings):
+
+- **`GOOGLE_PLACES_API_KEY`** (environment variable, encrypted). Without it, a Google Maps link only gives the business name, and the visitor is asked for their website too. With it, Maps links also return the category, star rating, review count and website, and the website is scanned automatically. Create the key in Google Cloud with the **Places API (New)** enabled and restrict it to that API. Google bills per lookup beyond its free monthly allowance.
+- **`SCANS`** (KV namespace binding). Saves every scan for 180 days, so you can see which businesses scanned and follow up.
+- **Rate limit.** Add a Cloudflare rate-limiting rule for `/api/scan` (for example 10 requests per minute per IP) so nobody can use the scanner to hammer other sites.
+
+The scanner only fetches public `http`/`https` pages on ports 80 and 443, refuses IP addresses and internal hostnames, stops after 9 seconds, and reads at most 1.5 MB.
+
+## Newsletter
+
+`newsletter/template.html` is an email-safe design (tables and inline styles, so it works in Gmail, Outlook and Apple Mail). `newsletter/render.py` fills it from a short JSON file per issue and also writes a plain-text version. `newsletter/GROK_NEWSLETTER_GUIDE.md` is the full weekly brief for Grok, and `newsletter/issues/example-issue-1-lead-follow-up.json` is a finished example (built output in `newsletter/out/`).
 
 ## Prices on the homepage
 
@@ -64,5 +83,5 @@ The homepage leads with setup time, not cost. Prices only appear in the stack fi
 ## Design notes
 
 - Fonts (Google Fonts): Bricolage Grotesque (display), Geist (body), Geist Mono (prices and labels), Caveat (handwritten notes).
-- Colors are CSS variables at the top of `assets/site.css`; dark mode follows the visitor's system setting.
+- Colors are CSS variables at the top of `public/assets/site.css` (electric violet `--pen`, lime highlighter `--hl`, hot pink `--pink`); dark mode follows the visitor's system setting.
 - All motion respects `prefers-reduced-motion`.

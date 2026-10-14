@@ -245,6 +245,63 @@
     if (bySlug['lead-follow-up']) renderStack(bySlug['lead-follow-up'], true);
   }
 
+  /* ---------- business scan ---------- */
+  const scanForm = $('#scanForm'), scanOut = $('#scanOut'), scanUrl = $('#scanUrl');
+  const CHECK_LABELS = { booking: 'Online booking', chat: 'Website chat', email: 'Email signup', crm: 'CRM or lead capture', form: 'Contact form', reviews: 'Reviews on your site', store: 'Online store', payments: 'Online payments', blog: 'Blog or articles', social: 'Social media links' };
+  const EXAMPLE_SCAN = {
+    example: true, name: 'A neighborhood dental practice', url: 'https://yourbusiness.com', industry: 'Health and wellness', platform: 'WordPress',
+    checks: Object.keys(CHECK_LABELS).map(k => ({ key: k, label: CHECK_LABELS[k], found: ['form', 'social', 'payments'].includes(k) })),
+    recommendations: [
+      { slug: 'scheduling', why: "We didn't find a way to book online. Let patients pick a time themselves instead of calling or emailing back and forth." },
+      { slug: 'lead-follow-up', why: "Your site collects inquiries, but we didn't spot a CRM. New leads can slip through without an automatic follow up." },
+      { slug: 'website-chat', why: "There's no chat on your site. A chat assistant answers common questions after hours and collects contact details." },
+      { slug: 'client-intake', why: 'Intake forms that fill your records automatically save you typing for every new patient.' },
+    ],
+  };
+  const reportFrame = (url, tag, inner) => `<div class="report"><div class="report__bar"><span class="report__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="report__url">${esc(url)}</span>${tag ? `<span class="report__tag">${esc(tag)}</span>` : ''}</div>
+      <div class="report__scan" aria-hidden="true"></div><div class="report__in">${inner}</div></div>`;
+  const renderReport = d => {
+    const host = d.url ? d.url.replace(/^https?:\/\//, '').replace(/\/$/, '') : 'Google Maps listing';
+    const meta = [d.industry, d.platform && `Built on ${d.platform}`, d.maps && d.maps.rating != null && `${d.maps.rating}★ from ${d.maps.reviews} Google reviews`].filter(Boolean);
+    const recs = (d.recommendations || []).filter(r => bySlug[r.slug]);
+    scanOut.innerHTML = reportFrame(host, d.example ? 'Example report' : 'Your report', `
+      <div><p class="report__name">${esc(d.name || 'Your business')}</p>${meta.length ? `<div class="report__meta">${meta.map(m => `<span class="chip">${esc(m)}</span>`).join('')}</div>` : ''}</div>
+      ${d.note ? `<p class="report__note">${esc(d.note)}</p>` : ''}
+      ${d.checks && d.checks.length ? `<div><h3>What we found on your site</h3><ul class="checks">${d.checks.map(c => `<li class="${c.found ? 'yes' : ''}">${esc(c.label)}${c.found ? '' : '<span class="sr"> not found</span>'}</li>`).join('')}</ul></div>` : ''}
+      ${recs.length ? `<div><h3>${d.checks && d.checks.length ? 'Fix these first' : 'Good places to start'}</h3><ol class="recs">${recs.map(r => {
+        const st = bySlug[r.slug];
+        return `<li class="rec"><h4>${esc(st.label)}</h4><p>${esc(r.why)}</p><span class="rec__go"><button type="button" data-show="${st.slug}">Show me this stack</button><a href="/best-ai-tools-for-${st.slug}/">Read the full guide →</a></span></li>`;
+      }).join('')}</ol></div>` : ''}`);
+  };
+  if (scanOut) {
+    renderReport(EXAMPLE_SCAN);
+    scanOut.addEventListener('click', e => {
+      const b = e.target.closest('[data-show]'); if (!b) return;
+      renderStack(bySlug[b.dataset.show], false);
+      $('#stack').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+    });
+  }
+  if (scanForm) scanForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const url = scanUrl.value.trim();
+    if (!url) { scanUrl.focus(); scanUrl.setAttribute('aria-invalid', 'true'); return; }
+    scanUrl.removeAttribute('aria-invalid');
+    const btn = scanForm.querySelector('button'); btn.disabled = true;
+    scanOut.innerHTML = reportFrame(url.replace(/^https?:\/\//, ''), 'Scanning', '<p class="report__status" id="scanStatus">Reading your page…</p>');
+    const box = $('.report', scanOut); box.classList.add('is-loading');
+    const steps = ['Reading your page…', 'Looking for online booking…', 'Checking for chat and email signup…', 'Looking for reviews…', 'Matching you to stacks…'];
+    let k = 0; const tk = setInterval(() => { const st = $('#scanStatus'); if (st) st.textContent = steps[++k % steps.length]; }, 1400);
+    try {
+      const r = await fetch('/api/scan', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) });
+      const d = await r.json().catch(() => ({}));
+      if (r.ok && d.ok) renderReport(d);
+      else scanOut.innerHTML = reportFrame(url, 'Try again', `<p class="report__note">${esc(d.error || 'The scanner is not available right now. Please try again in a minute.')}</p>`);
+    } catch (_) {
+      scanOut.innerHTML = reportFrame(url, 'Try again', '<p class="report__note">We couldn\'t reach the scanner. Check your connection and try again.</p>');
+    } finally { clearInterval(tk); btn.disabled = false; }
+  });
+
   /* ---------- the week ---------- */
   const WEEK = [
     ['Mon', [['Chase new leads', 2, 'lead-follow-up'], ['Inbox triage', 1.5, 'customer-support-email']]],
@@ -409,7 +466,7 @@
   /* ---------- reveal on scroll (only for things below the fold at load) ---------- */
   let pending = [];
   if (!reduce) {
-    $$('.tasks__top, .index li, .manifesto__text, .steps li, .copilots__top, .card, .feature, .guides__list li, .signup__title, .signup__body, .week__head').forEach((el, i) => {
+    $$('.tasks__top, .index li, .manifesto__text, .steps li, .copilots__top, .card, .feature, .guides__list li, .signup__main, .week__head, .scan__out, .faq__head, .qa').forEach((el, i) => {
       if (el.getBoundingClientRect().top > innerHeight) {
         el.classList.add('pre');
         el.dataset.delay = el.matches('.index li, .steps li, .card, .guides__list li') ? (i % 6) * 60 : 0;

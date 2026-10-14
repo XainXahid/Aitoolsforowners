@@ -12,7 +12,7 @@
 <meta property="og:url" content="https://aitoolsforowners.com/">
 <meta property="og:image" content="https://aitoolsforowners.com/og.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#12142E">
+<meta name="theme-color" content="#6236FF">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -94,7 +94,7 @@
       <div class="pad__sheet">
         <figcaption class="pad__head"><span>Monday</span><span class="pad__hand">things I keep putting off</span></figcaption>
         <ol class="pad__list" id="padList"></ol>
-        <p class="pad__foot">Each note shows the starting monthly cost of the paid tools in that stack.</p>
+        <p class="pad__foot">Each note shows how long that stack takes to set up.</p>
       </div>
       <div class="hero__seal" aria-hidden="true">
         <svg viewBox="0 0 200 200"><defs><path id="circ" d="M100,100 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0"/></defs><text><textPath href="#circ">FREE · NO SIGNUP · PLAIN-ENGLISH SETUP STEPS · </textPath></text></svg>
@@ -114,6 +114,26 @@
 <section class="band band--ink" id="stack" aria-live="polite">
   <div class="shell">
     <div id="result"></div>
+  </div>
+</section>
+
+<!-- ============ BUSINESS SCAN ============ -->
+<section class="scan" id="scan">
+  <div class="shell scan__grid">
+    <div class="scan__intro">
+      <p class="kicker">Free business scan</p>
+      <h2 class="h2">Paste your website or Google Maps link. <em>We'll find the gaps.</em></h2>
+      <p class="scan__lede">We read your public page, see what you already have (online booking, chat, reviews, an email signup, an online store) and point you to the stacks that fill the gaps. It takes about ten seconds.</p>
+      <form id="scanForm" class="scanform" autocomplete="off" novalidate>
+        <label for="scanUrl" class="finder__label">Your website or Google Maps link</label>
+        <div class="finder__row">
+          <input id="scanUrl" name="url" type="text" inputmode="url" placeholder="yourbusiness.com or a Maps link" aria-describedby="scanFine">
+          <button class="btn magnet" type="submit"><span>Scan my business</span><svg class="arr" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
+        </div>
+        <p class="scan__fine" id="scanFine">We only read pages anyone can already see. Nothing on your site is changed. In Google Maps, tap <b>Share</b> and copy the link.</p>
+      </form>
+    </div>
+    <div class="scan__out" id="scanOut" aria-live="polite"></div>
   </div>
 </section>
 
@@ -242,17 +262,39 @@
 <!-- ============ NEWSLETTER ============ -->
 <section class="band band--hl signup" id="signup">
   <div class="shell signup__grid">
-    <h2 class="signup__title">One stack.<br>Every week.</h2>
-    <div class="signup__body">
-      <p><strong>The A.T.F.O. Newsletter.</strong> One useful AI tool stack every week. Free, short, and written for owners. Unsubscribe any time.</p>
+    <div class="signup__main">
+      <p class="signup__kicker">The A.T.F.O. Newsletter</p>
+      <h2 class="signup__title">One stack.<br>Every week.</h2>
+      <ul class="signup__list">
+        <li><b>The stack</b> One task, the tools that handle it, and why.</li>
+        <li><b>Set it up</b> Three steps you can finish before lunch.</li>
+        <li><b>Steal this prompt</b> A copy-and-paste prompt for your AI assistant.</li>
+      </ul>
       <form class="nl js-api" action="/api/subscribe" method="post">
         <label class="sr" for="em">Email</label>
         <input id="em" type="email" name="email" placeholder="you@business.com" required>
         <input type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true" class="hp">
-        <button class="btn btn--ink magnet" type="submit"><span>Subscribe</span></button>
+        <button class="btn btn--ink magnet" type="submit"><span>Get the next issue</span></button>
       </form>
       <p class="form-msg" role="status" aria-live="polite"></p>
+      <p class="signup__fine">Free, about a 3-minute read, every week. Unsubscribe any time.</p>
     </div>
+    <figure class="mail" aria-label="Preview of a newsletter issue">
+      <div class="mail__bar"><i></i><i></i><i></i><span>Inbox</span></div>
+      <div class="mail__head">
+        <span class="mail__from"><span class="mail__av" aria-hidden="true">✓</span><span><b>A.T.F.O.</b><small>Tuesday, 7:00 AM</small></span></span>
+        <p class="mail__subj">The 55-minute fix for leads that go cold</p>
+      </div>
+      <div class="mail__body">
+        <p class="mail__issue">Issue 12 · Lead follow up</p>
+        <p class="mail__h">Stop losing leads you already paid for.</p>
+        <div class="mail__stack"><span>HubSpot</span><span>Zapier</span><span>ChatGPT</span></div>
+        <ol class="mail__steps"><li>Import your leads</li><li>Connect your web form</li><li>Load a 3-email follow up</li></ol>
+        <div class="mail__prompt"><small>Steal this prompt</small>"Write a friendly 3-email follow up for a lead who asked about…"</div>
+        <span class="mail__cta">Set it up →</span>
+      </div>
+      <figcaption class="sr">Each issue covers one stack, three setup steps and one prompt.</figcaption>
+    </figure>
   </div>
 </section>
 

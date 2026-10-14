@@ -1,0 +1,35 @@
+A.T.F.O. — Issue 1 · October 20, 2026
+
+LEAD FOLLOW UP
+Stop losing leads you already paid for.
+
+Most leads don't say no. They just never hear back fast enough.
+This week's stack catches every form fill, sends a friendly follow up on its own, and drafts the personal replies for you. You can set it up in under an hour.
+
+THE STACK
+- HubSpot (30 min setup, Easy): Holds every lead and sends follow up sequences.
+  https://www.hubspot.com?ref=aitoolsforowners
+- Zapier (20 min setup, Easy): Pushes new leads from forms into HubSpot.
+  https://zapier.com?ref=aitoolsforowners
+- ChatGPT (5 min setup, Easy): Drafts personal follow up emails in seconds.
+  https://chatgpt.com?ref=aitoolsforowners
+Ready in about 55 min.
+
+SET IT UP
+1. Create a free HubSpot account and import your lead list.
+2. Connect your web form to HubSpot with a Zapier zap.
+3. Write a 3 email follow up sequence with ChatGPT, then load it into HubSpot.
+
+STEAL THIS PROMPT
+You're my sales assistant. Write a friendly 3-email follow up for a lead who asked about [service]. Email 1 goes out today, email 2 in 3 days, email 3 in a week. Keep each under 90 words, sound like a real person, and end each with one easy question.
+
+QUICK WIN: REPLY IN 5 MINUTES
+Leads contacted within minutes are far more likely to book. Even a one-line "Got your message, I'll call you at 3" counts.
+
+See the full stack: https://aitoolsforowners.com/best-ai-tools-for-lead-follow-up/?utm_source=newsletter&utm_medium=email&utm_campaign=issue-1
+
+Want picks for your business? Free scan: https://aitoolsforowners.com/?utm_source=newsletter&utm_medium=email&utm_campaign=issue-1#scan
+
+Some links are affiliate links. We may earn a commission at no cost to you.
+[Your business mailing address]
+Unsubscribe: [Your unsubscribe merge tag]

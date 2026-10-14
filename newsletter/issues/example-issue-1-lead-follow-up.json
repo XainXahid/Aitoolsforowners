@@ -1,0 +1,55 @@
+{
+  "issue_number": 1,
+  "date": "October 20, 2026",
+  "slug": "lead-follow-up",
+  "subject": "The 55-minute fix for leads that go cold",
+  "preheader": "Three tools, three steps, and a prompt that writes your follow ups for you.",
+  "task_label": "Lead follow up",
+  "headline": "Stop losing leads you already paid for.",
+  "intro": [
+    "Most leads don't say no. They just never hear back fast enough.",
+    "This week's stack catches every form fill, sends a friendly follow up on its own, and drafts the personal replies for you. You can set it up in under an hour."
+  ],
+  "tools": [
+    {
+      "name": "HubSpot",
+      "url": "https://www.hubspot.com?ref=aitoolsforowners",
+      "why": "Holds every lead and sends follow up sequences.",
+      "setup": "30 min",
+      "difficulty": "Easy"
+    },
+    {
+      "name": "Zapier",
+      "url": "https://zapier.com?ref=aitoolsforowners",
+      "why": "Pushes new leads from forms into HubSpot.",
+      "setup": "20 min",
+      "difficulty": "Easy"
+    },
+    {
+      "name": "ChatGPT",
+      "url": "https://chatgpt.com?ref=aitoolsforowners",
+      "why": "Drafts personal follow up emails in seconds.",
+      "setup": "5 min",
+      "difficulty": "Easy"
+    }
+  ],
+  "setup_total": "55 min",
+  "steps": [
+    "Create a free HubSpot account and import your lead list.",
+    "Connect your web form to HubSpot with a Zapier zap.",
+    "Write a 3 email follow up sequence with ChatGPT, then load it into HubSpot."
+  ],
+  "prompt": {
+    "text": "You're my sales assistant. Write a friendly 3-email follow up for a lead who asked about [service]. Email 1 goes out today, email 2 in 3 days, email 3 in a week. Keep each under 90 words, sound like a real person, and end each with one easy question.",
+    "works_in": "Claude, ChatGPT, Gemini or Grok"
+  },
+  "tip": {
+    "title": "Quick win: reply in 5 minutes",
+    "body": "Leads contacted within minutes are far more likely to book. Even a one-line \"Got your message, I'll call you at 3\" counts."
+  },
+  "cta_label": "See the full stack",
+  "cta_url": "https://aitoolsforowners.com/best-ai-tools-for-lead-follow-up/",
+  "web_url": "https://aitoolsforowners.com/newsletter/",
+  "unsubscribe_url": "[Your unsubscribe merge tag]",
+  "mailing_address": "[Your business mailing address]"
+}
