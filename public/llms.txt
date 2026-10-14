@@ -31,6 +31,8 @@ Owners can also get a free scan: paste a website or Google Maps link at https://
 - Google Gemini: Owners who already run on Gmail, Docs, Sheets and Calendar
 - Grok Bot: Recurring work across email, CRMs and websites that you want done on a schedule
 - ChatGPT: A general all-rounder, and the one most people already know
+- ChatGPT dots: An always-on agent that keeps working on a goal between chats and connects to thousands of apps
+- Meta Muse: Everyday errands done for you, like email, booking, forms and checkouts, and it's free to start
 
 ## Guides and comparisons
 - [Claude vs Gemini vs Grok Bot vs ChatGPT for small business](https://aitoolsforowners.com/compare-ai-assistants-for-small-business/)

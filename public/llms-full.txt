@@ -23,6 +23,8 @@ How each AI assistant handles this task:
 - Google Gemini: Drafts replies right in Gmail and logs leads in Sheets. Add-ons: Google Workspace, HubSpot.
 - Grok Bot: Runs a routine that checks new leads every few minutes and drafts the first reply in your CRM. Add-ons: Grok Bot routines, HubSpot.
 - ChatGPT: Writes follow-up messages you paste or send with a Zap. Add-ons: Zapier, HubSpot.
+- ChatGPT dots: Watches your CRM and inbox all day and drafts a reply to every new lead for you to approve. Add-ons: HubSpot, Gmail or Outlook.
+- Meta Muse: Replies to new inquiries from your email and offers times from your calendar, with your approval. Add-ons: Gmail, Google Calendar.
 
 ## Best AI tools for real estate lead follow-up
 URL: https://aitoolsforowners.com/best-ai-tools-for-real-estate-leads/
@@ -45,6 +47,8 @@ How each AI assistant handles this task:
 - Google Gemini: Drafts replies in Gmail and books showings on Google Calendar. Add-ons: Google Workspace, Calendly.
 - Grok Bot: Watches Follow Up Boss and Zillow lead emails and drafts first replies within minutes, plus daily expired and FSBO scans. Add-ons: Grok Bot routines, Follow Up Boss.
 - ChatGPT: Writes listing descriptions and text replies. Add-ons: Zapier, Follow Up Boss.
+- ChatGPT dots: Monitors Follow Up Boss and portal lead emails around the clock and drafts first replies and showing times. Add-ons: Follow Up Boss, Calendly.
+- Meta Muse: Sends first replies to buyer inquiries and books showings straight into your calendar. Add-ons: Gmail, Google Calendar.
 
 ## Best AI tools for invoicing
 URL: https://aitoolsforowners.com/best-ai-tools-for-invoicing/
@@ -65,6 +69,8 @@ How each AI assistant handles this task:
 - Google Gemini: Builds invoice trackers in Sheets and drafts reminders in Gmail. Add-ons: Google Workspace, QuickBooks.
 - Grok Bot: Checks for overdue invoices on a schedule and drafts reminders for you to approve. Add-ons: Grok Bot routines, QuickBooks.
 - ChatGPT: Drafts reminder emails and invoice notes. Add-ons: Zapier, QuickBooks.
+- ChatGPT dots: Checks QuickBooks for overdue invoices each morning and drafts polite reminders for you to send. Add-ons: QuickBooks, Gmail.
+- Meta Muse: Sends payment reminder emails and fills in invoice forms in your billing tool for you. Add-ons: Gmail, QuickBooks.
 
 ## Best AI tools for bookkeeping and expenses
 URL: https://aitoolsforowners.com/best-ai-tools-for-bookkeeping/
@@ -87,6 +93,8 @@ How each AI assistant handles this task:
 - Google Gemini: Pulls receipts from Gmail into Sheets and sums expenses. Add-ons: Google Workspace, Dext.
 - Grok Bot: Sorts receipts from email, suggests categories and drafts monthly summaries for review. Add-ons: Grok Bot routines, Xero or QuickBooks.
 - ChatGPT: Answers bookkeeping questions and summarizes exported reports. Add-ons: Zapier, Xero.
+- ChatGPT dots: Sorts receipts from your inbox, flags odd expenses and prepares a monthly summary for your bookkeeper. Add-ons: Xero or QuickBooks, Dext.
+- Meta Muse: Gathers receipts from your email and fills in expense forms, so your books stay up to date. Add-ons: Gmail, Dext.
 
 ## Best AI tools for scheduling appointments
 URL: https://aitoolsforowners.com/best-ai-tools-for-scheduling/
@@ -107,6 +115,8 @@ How each AI assistant handles this task:
 - Google Gemini: Works inside Google Calendar and Gmail to suggest times. Add-ons: Google Workspace, Calendly.
 - Grok Bot: Handles back and forth over email and creates events once you approve. Add-ons: Grok Bot routines, Calendly.
 - ChatGPT: Drafts scheduling messages. Add-ons: Zapier, Calendly.
+- ChatGPT dots: Handles the back-and-forth over email and Slack and proposes times from your calendar for you to confirm. Add-ons: Calendly, Google Calendar.
+- Meta Muse: Books, moves and confirms appointments over email and fills in booking forms for you. Add-ons: Google Calendar, Calendly.
 
 ## Best AI tools for social media posts
 URL: https://aitoolsforowners.com/best-ai-tools-for-social-media/
@@ -127,6 +137,8 @@ How each AI assistant handles this task:
 - Google Gemini: Drafts posts in Docs and finds images in Drive. Add-ons: Google Workspace, Canva.
 - Grok Bot: Drafts a week of posts on a schedule and saves them in your scheduler for review. Add-ons: Grok Bot routines, Buffer, Canva.
 - ChatGPT: Writes captions and makes simple images. Add-ons: Canva, Buffer.
+- ChatGPT dots: Drafts a week of posts from your notes and photos and queues them in your scheduler for review. Add-ons: Buffer, Canva.
+- Meta Muse: Drafts captions from your notes and reminds you when it's time to post. Add-ons: Instagram, Facebook.
 
 ## Best AI tools for customer support emails
 URL: https://aitoolsforowners.com/best-ai-tools-for-customer-support-email/
@@ -147,6 +159,8 @@ How each AI assistant handles this task:
 - Google Gemini: Drafts replies inside Gmail with Gemini. Add-ons: Google Workspace, Help Scout.
 - Grok Bot: Triages the inbox twice a day and drafts replies to common questions. Add-ons: Grok Bot routines, Help Scout.
 - ChatGPT: Drafts replies you paste into your help desk. Add-ons: Zapier, Help Scout.
+- ChatGPT dots: Triages the support inbox through the day and drafts replies to common questions in your tone. Add-ons: Help Scout, Slack.
+- Meta Muse: Drafts replies to customer emails from your past answers, ready for you to send. Add-ons: Gmail or Outlook.
 
 ## Best AI tools for answering website questions
 URL: https://aitoolsforowners.com/best-ai-tools-for-website-chat/
@@ -167,6 +181,8 @@ How each AI assistant handles this task:
 - Google Gemini: Turns Docs into FAQ content for your chat tool. Add-ons: Google Workspace, Tidio.
 - Grok Bot: Reviews chat logs daily and drafts new FAQ answers. Add-ons: Grok Bot routines, Tidio.
 - ChatGPT: Writes FAQ answers for your chat tool. Add-ons: Tidio, Zapier.
+- ChatGPT dots: Reviews chat transcripts daily and turns repeat questions into new FAQ answers for your chat bot. Add-ons: Tidio.
+- Meta Muse: Writes FAQ answers from the questions in your inbox, ready to paste into your chat tool. Add-ons: Tidio.
 
 ## Best AI tools for meeting notes
 URL: https://aitoolsforowners.com/best-ai-tools-for-meeting-notes/
@@ -187,6 +203,8 @@ How each AI assistant handles this task:
 - Google Gemini: Takes notes in Google Meet and saves them to Docs. Add-ons: Google Workspace, Fireflies.
 - Grok Bot: Collects transcripts after meetings and sends action items to your task list. Add-ons: Grok Bot routines, Fireflies.
 - ChatGPT: Summarizes transcripts you paste. Add-ons: Otter, Zapier.
+- ChatGPT dots: Collects transcripts after each call, writes the summary and adds action items to your task list. Add-ons: Fireflies, Slack or Teams.
+- Meta Muse: Turns your call notes into a short summary and emails the follow-up to everyone who attended. Add-ons: Gmail, Google Calendar.
 
 ## Best AI tools for email newsletters
 URL: https://aitoolsforowners.com/best-ai-tools-for-email-marketing/
@@ -207,6 +225,8 @@ How each AI assistant handles this task:
 - Google Gemini: Drafts emails in Docs and pulls customer lists from Sheets. Add-ons: Google Workspace, Mailchimp.
 - Grok Bot: Drafts each issue on a schedule and loads it into your email tool as a draft. Add-ons: Grok Bot routines, Mailchimp.
 - ChatGPT: Drafts emails and subject lines. Add-ons: Mailchimp, Canva.
+- ChatGPT dots: Drafts each issue from your bullet points and loads it into your email tool as a draft. Add-ons: Mailchimp.
+- Meta Muse: Turns a few bullet points into a friendly newsletter draft you can paste into your email tool. Add-ons: Mailchimp.
 
 ## Best AI tools for online store customer service
 URL: https://aitoolsforowners.com/best-ai-tools-for-online-store-support/
@@ -227,6 +247,8 @@ How each AI assistant handles this task:
 - Google Gemini: Drafts replies in Gmail and tracks orders in Sheets. Add-ons: Google Workspace, Gorgias.
 - Grok Bot: Checks order emails and drafts replies to common questions on a schedule. Add-ons: Grok Bot routines, Gorgias.
 - ChatGPT: Drafts support replies and product copy. Add-ons: Gorgias, Klaviyo.
+- ChatGPT dots: Drafts answers to "where is my order?" emails from live order data and flags refunds for you to approve. Add-ons: Gorgias, Shopify.
+- Meta Muse: Handles order-status emails and fills in return forms for customers you approve. Add-ons: Gmail, Shopify.
 
 ## Best AI tools for proposals and contracts
 URL: https://aitoolsforowners.com/best-ai-tools-for-proposals-contracts/
@@ -247,6 +269,8 @@ How each AI assistant handles this task:
 - Google Gemini: Builds proposals in Google Docs from a template. Add-ons: Google Workspace, PandaDoc.
 - Grok Bot: Builds a draft proposal from your notes and CRM and saves it to PandaDoc for review. Add-ons: Grok Bot routines, PandaDoc.
 - ChatGPT: Drafts proposal sections. Add-ons: PandaDoc, Zapier.
+- ChatGPT dots: Builds first-draft proposals from your call notes and past wins, ready to send for e-signature. Add-ons: PandaDoc.
+- Meta Muse: Drafts quote emails from your notes and fills in proposal templates for you. Add-ons: PandaDoc, Gmail.
 
 ## Best AI tools for getting customer reviews
 URL: https://aitoolsforowners.com/best-ai-tools-for-reviews/
@@ -267,6 +291,8 @@ How each AI assistant handles this task:
 - Google Gemini: Drafts review replies and tracks ratings in Sheets. Add-ons: Google Workspace, Birdeye.
 - Grok Bot: Checks new reviews daily and drafts replies for you to approve. Add-ons: Grok Bot routines, Birdeye.
 - ChatGPT: Drafts review replies. Add-ons: Birdeye, Zapier.
+- ChatGPT dots: Sends review requests after finished jobs and drafts replies to new reviews for you to approve. Add-ons: Birdeye, Google Business Profile.
+- Meta Muse: Emails happy customers a review link after each job and drafts replies to new reviews. Add-ons: Gmail, Google Business Profile.
 
 ## Best AI tools for client intake and onboarding
 URL: https://aitoolsforowners.com/best-ai-tools-for-client-intake/
@@ -287,6 +313,8 @@ How each AI assistant handles this task:
 - Google Gemini: Uses Google Forms and Sheets for intake. Add-ons: Google Workspace, Typeform.
 - Grok Bot: Reads new intake forms and sets up the client folder and welcome email draft. Add-ons: Grok Bot routines, Typeform.
 - ChatGPT: Writes intake questions and welcome emails. Add-ons: Typeform, Zapier.
+- ChatGPT dots: Reads new intake form submissions, sets up the client file and drafts the welcome email. Add-ons: Typeform, Google Drive.
+- Meta Muse: Sends new clients your intake forms, follows up until they're done and books the first meeting. Add-ons: Typeform, Google Calendar.
 
 ## Best AI tools for writing blog posts and marketing copy
 URL: https://aitoolsforowners.com/best-ai-tools-for-writing-content/
@@ -307,6 +335,8 @@ How each AI assistant handles this task:
 - Google Gemini: Writes in Google Docs with your files as context. Add-ons: Google Workspace, Canva.
 - Grok Bot: Researches and drafts posts on a schedule and saves them to your docs. Add-ons: Grok Bot routines, Canva.
 - ChatGPT: Writes drafts and outlines. Add-ons: Grammarly, Canva.
+- ChatGPT dots: Researches topics and drafts blog posts and web copy in your voice, ready for your edit. Add-ons: Google Docs.
+- Meta Muse: Drafts posts and website copy from a short brief, ready for your edit. Add-ons: Google Docs.
 
 ## Best AI tools for payroll
 URL: https://aitoolsforowners.com/best-ai-tools-for-payroll/
@@ -327,3 +357,5 @@ How each AI assistant handles this task:
 - Google Gemini: Tracks hours in Sheets and drafts notes in Gmail. Add-ons: Google Workspace, Gusto.
 - Grok Bot: Reminds you of payroll deadlines and collects timesheets for review. Add-ons: Grok Bot routines, Gusto.
 - ChatGPT: Answers payroll questions in general terms. Add-ons: Gusto, Zapier.
+- ChatGPT dots: Collects hours and time-off requests before each pay run and drafts the summary for you to approve. Add-ons: Gusto.
+- Meta Muse: Reminds your team to submit hours and collects time-off requests by email before payday. Add-ons: Gusto, Gmail.

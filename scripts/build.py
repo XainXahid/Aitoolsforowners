@@ -23,7 +23,8 @@ TODAY = datetime.date.today().isoformat()
 DESC = ("AI Tools For Owners (A.T.F.O.) is a free tool that recommends AI and automation "
         "tool stacks, with setup steps, for small business owners.")
 
-KIND = {"claude": "Writer", "gemini": "Workspace native", "grokbot": "Runs on a schedule", "chatgpt": "All-rounder"}
+KIND = {"claude": "Writer", "gemini": "Workspace native", "grokbot": "Runs on a schedule", "chatgpt": "All-rounder",
+        "chatgptdots": "Always-on agent", "muse": "Errands done for you"}
 PAGES = [  # pages on the live site that are not generated here
     ("/compare-ai-assistants-for-small-business/", "Claude vs Gemini vs Grok Bot vs ChatGPT for small business"),
     ("/how-to-use-grok-bots-in-everyday-life/", "How to use Grok Bots in everyday life: free beginner guide"),
@@ -142,7 +143,7 @@ def faq_items(stacks, asst, aord):
           "You type the task that takes up your time, and it shows which tools handle it, why each one is there, how long setup takes, and the steps to set it up. There is no signup."], None),
         ("What are the best AI tools for small business owners?",
          ["It depends on the job you want off your plate. These are our picks for the 16 tasks owners ask about most:"], best),
-        ("Should my small business use Claude, ChatGPT, Gemini or Grok?",
+        ("Should my small business use Claude, ChatGPT, ChatGPT dots, Gemini, Grok Bot or Meta Muse?",
          ["Pick the assistant that fits how you already work. Here is what each one is best for:"], ast + [
           "Full comparison: aitoolsforowners.com/compare-ai-assistants-for-small-business/"]),
         ("How long does it take to set up an AI tool stack?",

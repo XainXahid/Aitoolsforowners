@@ -191,13 +191,15 @@
     setTimeout(type, 1600);
   }
 
+  // Always-on agents take longer to connect to your apps than a chat assistant.
+  const AGENT_SETUP = { grokbot: '1 hr', chatgptdots: '1 hr' };
   const renderStack = s => {
     const ids = s.tools.map(t => t.id);
     const dflt = ids.find(i => ASST[i]) || '';
     const rows = s.tools.map(t => ({ ...t, role: ASST[t.id] ? 'assistant' : 'tool' }))
       .concat(AORD.filter(a => !ids.includes(a)).map(a => ({
         id: a, name: ASST[a].name, url: ASST[a].url, why: s.how[AORD.indexOf(a)][0], price: ASST[a].price,
-        num: ASST[a].num, free: ASST[a].free, setup: a === 'grokbot' ? '1 hr' : '15 min', diff: a === 'grokbot' ? 'Medium' : 'Easy', role: 'alt',
+        num: ASST[a].num, free: ASST[a].free, setup: AGENT_SETUP[a] || '15 min', diff: AGENT_SETUP[a] ? 'Medium' : 'Easy', role: 'alt',
       })));
     const row = t => `<li class="receipt__row" data-id="${t.id}" data-role="${t.role}" data-price="${t.num}" data-free="${t.free}"${t.role === 'alt' ? ' hidden' : ''}>
         <a class="receipt__name" href="${esc(t.url)}" rel="sponsored nofollow noopener" target="_blank">${esc(t.name)}${ARR}</a>
@@ -328,7 +330,17 @@
       e.preventDefault();
       const q = input.value.trim();
       if (!q) { if (msg) msg.textContent = 'Type a task in your own words, or tap one of the examples below.'; input.focus(); return; }
-      const ranked = scoreAll(q);
+      // Assistant names ("ChatGPT dots", "Grok Bot", "Muse"...) aren't tasks: match the rest of the words.
+      const ASSIST = /\b(?:chatgpt(?: dots?)?|dots?|grok(?: ?bots?)?|meta muse|muse|claude|gemini|ai agents?|ai assistants?|assistants?|agents?)\b/g;
+      const task = q.toLowerCase().replace(ASSIST, ' ').replace(/\b(?:for|with|using|use|and|or|vs|the|a)\b/g, ' ').trim();
+      if (!task) {
+        out.innerHTML = `<div class="res__miss"><p class="res__eyebrow">AI assistants</p><h2 class="res__title">Comparing assistants and agents?</h2>
+          <p>Every stack works with Claude, ChatGPT, ChatGPT dots, Gemini, Grok Bot or Meta Muse. Open any stack and tap an assistant to see how it handles that task, or tell us the chore you want handed off.</p>
+          <div class="res__cta"><a class="btn magnet" href="#copilots"><span>Compare assistants</span>${ARR}</a><a class="link-arrow" href="#tasks">Pick a task ${ARR}</a></div></div>`;
+        band.hidden = false; announce('Comparing AI assistants.'); bindMagnets(out);
+        return band.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+      }
+      const ranked = scoreAll(task);
       const amb = AMBIG.find(([re]) => re.test(q.toLowerCase()));
       const miss = MISSING.find(([re]) => re.test(q.toLowerCase()));
       // A clear winner: show it. Two close matches: let the owner pick.
@@ -469,7 +481,7 @@
   /* ---------- assistant deck ---------- */
   const deck = $('#deck');
   if (deck && !deck.querySelector('.card')) {
-    const KIND = { claude: 'Writer', gemini: 'Workspace native', grokbot: 'Runs on a schedule', chatgpt: 'All-rounder' };
+    const KIND = { claude: 'Writer', gemini: 'Workspace native', grokbot: 'Runs on a schedule', chatgpt: 'All-rounder', chatgptdots: 'Always-on agent', muse: 'Errands done for you' };
     deck.innerHTML = AORD.map((a, i) => `<button type="button" class="card${i === 0 ? ' is-open' : ''}" data-a="${a}" aria-expanded="${i === 0}">
       <span class="card__k">${esc(KIND[a] || 'Assistant')}</span>
       <span class="card__name">${esc(ASST[a].name)}</span>
