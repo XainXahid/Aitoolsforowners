@@ -28,7 +28,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 SITE = "https://aitoolsforowners.com"
 sys.path.insert(0, str(ROOT / "scripts"))
-from build import load_data, setup_total, fmt_minutes, difficulty  # noqa: E402
+from build import load_data, setup_total, friendly  # noqa: E402
 
 DEFAULTS = {
     "site_url": SITE + "/",
@@ -106,13 +106,13 @@ def draft(slug, issue):
         "issue_number": issue,
         "date": (datetime.date.today() + datetime.timedelta(days=(1 - datetime.date.today().weekday()) % 7)).strftime("%B %-d, %Y"),
         "slug": slug,
-        "subject": "WRITE: under 60 characters, names the outcome (e.g. 'The 55-minute fix for leads that go cold')",
+        "subject": "WRITE: under 60 characters, names the outcome (e.g. 'The one-hour fix for leads that go cold')",
         "preheader": "WRITE: under 110 characters, adds to the subject instead of repeating it",
         "task_label": s["label"],
         "headline": "WRITE: one bold line about the problem this stack solves",
         "intro": ["WRITE: 2 to 3 short sentences. Name the pain, then the promise."],
         "tools": [{"name": t["name"], "url": t["url"], "why": t["why"], "setup": t["setup"], "difficulty": t["diff"]} for t in s["tools"]],
-        "setup_total": fmt_minutes(setup_total(s)),
+        "setup_total": friendly(setup_total(s)),
         "steps": s["steps"],
         "prompt": {"text": "WRITE: one copy-and-paste prompt an owner can use today for this task", "works_in": "Claude, ChatGPT, Gemini or Grok"},
         "tip": {"title": "WRITE: optional quick win (delete this whole tip block to skip it)", "body": "WRITE: one or two sentences"},
@@ -184,7 +184,7 @@ def plain_text(d):
     L = [f"A.T.F.O. — Issue {d['issue_number']} · {d['date']}", "", d["task_label"].upper(), d["headline"], ""]
     L += d["intro"] + ["", "THE STACK"]
     L += [f"- {t['name']} ({t['setup']} setup, {t['difficulty']}): {t['why']}\n  {t['url']}" for t in d["tools"]]
-    L += [f"Ready in about {d['setup_total']}.", "", "SET IT UP"] + [f"{s['n']}. {s['text']}" for s in d["steps"]]
+    L += [f"Time to connect the tools: {d['setup_total']}.", "", "SET IT UP"] + [f"{s['n']}. {s['text']}" for s in d["steps"]]
     if d.get("prompt"):
         L += ["", "STEAL THIS PROMPT", d["prompt"]["text"]]
     if d.get("tip"):

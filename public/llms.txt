@@ -1,6 +1,6 @@
 # A.T.F.O. (AI Tools For Owners)
 
-> AIToolsForOwners (A.T.F.O., short for AI Tools For Owners) is a free tool that recommends AI tool stacks, with setup steps, for small business owners.
+> AI Tools For Owners (A.T.F.O.) is a free tool that recommends AI and automation tool stacks, with setup steps, for small business owners.
 
 A.T.F.O. is short for AI Tools For Owners. Website: https://aitoolsforowners.com. It is free to use with no signup. For each common small business task it recommends 2 to 4 tools, explains what each tool does in that stack, and gives setup time, difficulty (Easy or Medium), setup steps, and current starting prices.
 
@@ -10,7 +10,7 @@ Owners can also get a free scan: paste a website or Google Maps link at https://
 
 ## Task pages
 - [Best AI tools for following up with leads](https://aitoolsforowners.com/best-ai-tools-for-lead-follow-up/): HubSpot, Zapier and ChatGPT
-- [Best AI tools for real estate lead follow up](https://aitoolsforowners.com/best-ai-tools-for-real-estate-leads/): Follow Up Boss, Grok Bot, Calendly and ChatGPT
+- [Best AI tools for real estate lead follow-up](https://aitoolsforowners.com/best-ai-tools-for-real-estate-leads/): Follow Up Boss, Grok Bot, Calendly and ChatGPT
 - [Best AI tools for invoicing](https://aitoolsforowners.com/best-ai-tools-for-invoicing/): QuickBooks Online, Zapier and Dext
 - [Best AI tools for bookkeeping and expenses](https://aitoolsforowners.com/best-ai-tools-for-bookkeeping/): Xero, Dext, Claude and Grok Bot
 - [Best AI tools for scheduling appointments](https://aitoolsforowners.com/best-ai-tools-for-scheduling/): Calendly, Zapier and Reclaim.ai

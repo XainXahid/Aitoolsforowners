@@ -13,8 +13,15 @@
   const money = n => '$' + (Number.isInteger(n) ? n : n.toFixed(2));
   // Setup time: "30 min" / "1 hr" -> minutes, and back to a friendly label.
   const mins = s => { const [n, u] = s.split(' '); return Math.round(+n * (u.startsWith('hr') ? 60 : 1)); };
-  const fmtMins = m => { const h = Math.floor(m / 60), r = m % 60; return h ? `${h} hr${r ? ` ${r} min` : ''}` : `${r} min`; };
   const setupOf = s => s.tools.reduce((a, t) => a + mins(t.setup), 0);
+  // Honest ranges instead of false precision (same rules as scripts/build.py).
+  const friendly = m => m <= 35 ? '~30 min' : m <= 70 ? '~1 hr' : m <= 120 ? '1–2 hrs' : m <= 180 ? '2–3 hrs' : 'Half a day';
+  const CHECKED = window.CHECKED ? new Date(window.CHECKED + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '';
+  const announce = t => { const a = $('#announce'); if (a) { a.textContent = ''; setTimeout(() => { a.textContent = t; }, 50); } };
+  // Motion can be paused by the visitor (and is off with Reduce Motion).
+  let paused = reduce;
+  try { if (localStorage.getItem('atfo-motion') === 'off') paused = true; } catch (_) { /* storage blocked */ }
+  document.documentElement.classList.toggle('paused', paused);
   const short = n => n.replace(' Online', '').replace('.ai', '');
 
   /* ---------- year + clock ---------- */
@@ -46,6 +53,24 @@
     drawer.hidden = !open;
   });
   drawer.addEventListener('click', e => { if (e.target.closest('a')) burger.click(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && burger.getAttribute('aria-expanded') === 'true') { burger.click(); burger.focus(); }
+  });
+
+  /* ---------- pause motion ---------- */
+  const motionBtn = $('#motionBtn');
+  const syncMotion = () => {
+    document.documentElement.classList.toggle('paused', paused);
+    if (motionBtn) { motionBtn.setAttribute('aria-pressed', String(paused)); motionBtn.lastChild.textContent = paused ? 'Play motion' : 'Pause motion'; }
+  };
+  if (motionBtn) {
+    if (reduce) motionBtn.hidden = true;
+    motionBtn.addEventListener('click', () => {
+      paused = !paused; syncMotion();
+      try { localStorage.setItem('atfo-motion', paused ? 'off' : 'on'); } catch (_) { /* storage blocked */ }
+    });
+    syncMotion();
+  }
 
   /* ---------- tool shelf: two rows of tool chips drifting in opposite directions ---------- */
   const tracks = $$('.shelf__track');
@@ -77,17 +102,15 @@
     padList.innerHTML = PAD.map(([task, slug]) => {
       const s = bySlug[slug]; if (!s) return '';
       const tools = s.tools.slice(0, 2).map(t => short(t.name)).join(' + ');
-      return `<li><span class="pad__task">${esc(task)}${strike}</span><span class="pad__note">→ ${esc(tools)} <b>${fmtMins(setupOf(s))} setup</b></span></li>`;
+      return `<li><span class="pad__task">${esc(task)}${strike}</span><span class="pad__note">→ ${esc(tools)} <b>${friendly(setupOf(s))} setup</b></span></li>`;
     }).join('');
     const items = $$('li', padList);
-    if (reduce) items.forEach(li => li.classList.add('done'));
+    // Crosses the list off once, then stays still.
+    if (paused) items.forEach(li => li.classList.add('done'));
     else {
       let i = 0;
-      const step = () => {
-        if (i < items.length) { items[i++].classList.add('done'); setTimeout(step, 1300); }
-        else setTimeout(() => { items.forEach(li => li.classList.remove('done')); i = 0; setTimeout(step, 900); }, 3600);
-      };
-      setTimeout(step, 1400);
+      const step = () => { if (i < items.length) { items[i++].classList.add('done'); setTimeout(step, paused ? 0 : 1100); } };
+      setTimeout(step, 1200);
     }
     // gentle tilt toward the pointer
     const pad = $('#pad'), sheet = $('.pad__sheet', pad);
@@ -103,31 +126,72 @@
 
   /* ---------- finder ---------- */
   const form = $('#finder'), input = $('#task'), out = $('#result');
-  const match = q => {
-    q = q.toLowerCase(); let best = null, score = 0;
-    for (const s of STACKS) { let n = 0; for (const k of s.kw) if (q.includes(k)) n += k.length; if (n > score) { score = n; best = s; } }
-    return best;
+  // Words people actually type, mapped to the stacks that handle them.
+  const SYN = {
+    'scheduling': ['no shows', 'no show', 'reminder', 'appointment reminders', 'text reminders', 'sms', 'book appointments', 'bookings', 'booking', 'reschedul'],
+    'payroll': ['hiring', 'hire', 'new hires', 'new employees', 'employee onboarding', 'onboarding employees', 'pay my team', 'pay employees', 'timesheet', 'contractors 1099'],
+    'reviews': ['google business', 'google profile', 'yelp', 'reputation', 'ratings', 'star rating', 'surveys', 'customer feedback'],
+    'website-chat': ['same questions', 'faqs', 'questions from customers', 'website visitors', 'after hours'],
+    'customer-support-email': ['inbox', 'customer emails', 'replying to customers', 'customer service', 'support tickets'],
+    'invoicing': ['late payments', 'collect payments', 'collecting payments', 'getting paid', 'billing', 'unpaid'],
+    'proposals-contracts': ['quote', 'quotes', 'estimate', 'estimates', 'bids', 'contract', 'contracts', 'e sign', 'esign', 'signatures'],
+    'writing-content': ['seo', 'blog', 'website copy', 'website content', 'ad copy', 'product descriptions', 'writing'],
+    'social-media': ['facebook', 'instagram', 'tiktok', 'linkedin', 'content calendar', 'social'],
+    'email-marketing': ['newsletter', 'email list', 'promotions', 'email campaigns'],
+    'meeting-notes': ['call notes', 'notes from calls', 'transcribe', 'meeting minutes', 'notes'],
+    'bookkeeping': ['taxes', 'tax', 'expenses', 'receipts', 'accountant'],
+    'lead-follow-up': ['inquiries', 'enquiries', 'prospects', 'follow up', 'follow-up'],
+    'client-intake': ['new clients', 'intake forms', 'client onboarding', 'onboarding clients', 'onboarding new clients'],
+    'online-store-support': ['where is my order', 'shopify', 'returns', 'refunds', 'abandoned cart'],
   };
+  const norm = q => ' ' + q.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim() + ' ';
+  // Score each stack by the keywords that start a word in the query, so "design" doesn't match "sign".
+  const scoreAll = q => {
+    const n = norm(q);
+    return STACKS.map(s => {
+      let sc = 0;
+      for (const k of s.kw.concat(SYN[s.slug] || [])) if (n.includes(' ' + norm(k).trim())) sc += k.length;
+      return [s, sc];
+    }).filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]);
+  };
+  // Phrases that could mean more than one stack.
+  const AMBIG = [
+    [/\bemails?\b/, ['customer-support-email', 'email-marketing'], 'Which kind of email?'],
+    [/\b(?:text(?:ing| messages?)|sms)\b/, ['scheduling', 'reviews', 'lead-follow-up'], 'What do you want to text customers about?'],
+    [/\b(?:marketing|advertis\w*|more customers|new customers|get(?:ting)? customers|grow\w*)\b/, ['social-media', 'email-marketing', 'reviews', 'writing-content'], 'Which kind of marketing?'],
+  ];
+  // Tasks we don't cover yet, so we can say so plainly and point to the closest help.
+  const MISSING = [
+    [/\b(?:phone|calls?|voicemail|answering service|receptionist)\b/, 'answering phone calls', ['website-chat', 'scheduling'], 'Chat answers questions so fewer people need to call, and online booking cuts the "can I get an appointment?" calls.'],
+    [/\b(?:inventory|stock levels?)\b/, 'inventory', ['online-store-support', 'bookkeeping'], ''],
+    [/\b(?:shifts?|rota|staff schedul\w*|employee schedul\w*)\b/, 'staff shift scheduling', ['payroll'], 'Payroll tools like Gusto handle hours and time off, but not shift planning.'],
+    [/\b(?:video|youtube|podcasts?|reels)\b/, 'video and podcasts', ['social-media', 'writing-content'], ''],
+    [/\b(?:spreadsheets?|data entry|excel)\b/, 'data entry and spreadsheets', ['bookkeeping', 'client-intake'], ''],
+    [/\b(?:logo|graphic design|branding)\b/, 'logo and brand design', ['social-media'], 'Canva in the social media stack covers simple graphics.'],
+    [/\btranslat\w*\b/, 'translation', ['customer-support-email'], ''],
+  ];
+  const INDUSTRY = /\b(?:plumb\w*|hvac|roof\w*|electrician|salon|barber\w*|dentist|dental|restaurant|realtor|real estate agent|lawyer|attorney|contractor|landscap\w*|cleaning company|gym|spa|bakery|cafe|clinic|agency|shop owner|store owner)\b/;
 
   // Typed placeholder that cycles through real examples.
   if (input && !reduce) {
     const ex = ['Following up with leads takes forever', 'Chasing late invoices', 'Answering the same customer emails', 'Posting on social every day', 'Taking notes on every client call', 'Running payroll'];
     let k = 0, j = 0, del = false;
     const type = () => {
+      if (paused) { input.placeholder = ex[0]; return; }
       if (document.activeElement === input || input.value) { setTimeout(type, 1200); return; }
       const w = ex[k];
       input.placeholder = w.slice(0, j) + (j < w.length || del ? '|' : '');
       if (!del && j < w.length) j++;
       else if (!del) { del = true; setTimeout(type, 1800); return; }
       else if (j > 0) j -= 2;
-      else { del = false; j = 0; k = (k + 1) % ex.length; }
+      else { del = false; j = 0; k++; if (k >= ex.length) { input.placeholder = ex[0]; return; } }
       j = Math.max(0, j);
       setTimeout(type, del ? 22 : 55);
     };
     setTimeout(type, 1600);
   }
 
-  const renderStack = (s, isExample) => {
+  const renderStack = s => {
     const ids = s.tools.map(t => t.id);
     const dflt = ids.find(i => ASST[i]) || '';
     const rows = s.tools.map(t => ({ ...t, role: ASST[t.id] ? 'assistant' : 'tool' }))
@@ -144,29 +208,29 @@
     const asst = AORD.map((a, i) => `<button type="button" class="asst__item" data-a="${a}" aria-pressed="false">
         <span class="asst__name">${esc(ASST[a].name)}</span><span class="asst__price">${ASST[a].free === '1' ? 'Free plan available' : 'Paid plans'}</span>
         <p class="asst__how">${esc(s.how[i][0])} <em>Add-ons: ${esc(s.how[i][1])}.</em></p></button>`).join('');
-    const no = String(STACKS.indexOf(s) + 1).padStart(3, '0');
     out.innerHTML = `<div class="res" data-default="${dflt}">
       <div class="res__left">
-        <p class="res__eyebrow">${isExample ? '<b>Example</b> Type your own task above' : 'Your A.T.F.O. stack'}</p>
+        <p class="res__eyebrow">Your stack</p>
         <h2 class="res__title">${esc(s.label)}</h2>
         <p class="res__task">The tools that handle ${esc(s.task)}, why each one is there, setup time and difficulty.</p>
-        <div class="res__total"><small>Ready to use in about</small><span class="res__num"><span class="t-time">${fmtMins(setupOf(s))}</span></span><p class="res__unk res__sub">${s.tools.length} tools · ${s.tools.some(t => t.diff === 'Medium') ? 'Easy to medium' : 'All easy'} setup</p></div>
+        <div class="res__total"><small>Time to connect the tools</small><span class="res__num"><span class="t-time">${friendly(setupOf(s))}</span></span><p class="res__sub">${s.tools.length} tools · ${s.tools.some(t => t.diff === 'Medium') ? 'Easy to medium' : 'All easy'} setup. Writing your own templates and content takes longer, so plan an afternoon.</p></div>
         <button type="button" class="costs-btn" aria-expanded="false" aria-controls="costs">See monthly costs <span aria-hidden="true">+</span></button>
         <div class="costs" id="costs" hidden>
-        <div class="costs__sum"><small>Estimated monthly cost</small><strong class="t-val">$0</strong><span>/mo</span></div>
+        <div class="costs__sum"><small>Known starting costs</small><strong class="t-val">$0</strong><span class="t-plus"></span><span>/mo</span></div>
         <p class="res__unk t-unk"></p><p class="res__drop"></p>
         <div class="res__ctrl">
           <label for="f-budget">Budget<select id="f-budget" class="f-budget"><option value="any">Any budget</option><option value="0">Free only</option><option value="25">Under $25/mo</option><option value="50">Under $50/mo</option></select></label>
           <label for="f-asst">AI assistant<select id="f-asst" class="f-asst"><option value="">No preference</option>${AORD.map(a => `<option value="${a}">${esc(ASST[a].name)}</option>`).join('')}</select></label>
         </div>
-        <p class="costs__note">Starting prices. Many tools have free plans, and prices change, so check each tool's site.</p>
+        <p class="costs__note">Starting prices${CHECKED ? `, last checked ${CHECKED}` : ''}. Many tools have free plans, and prices change, so check each tool's site before you budget.</p>
         </div>
       </div>
       <div class="receipt">
-        <div class="receipt__head"><span>Stack no. ${no}</span><span class="r-col">Setup time</span></div>
+        <div class="receipt__head"><span>${esc(s.label)}</span><span class="r-col">Setup time</span></div>
         <ul class="receipt__list">${rows.map(row).join('')}</ul>
-        <div class="receipt__sum"><span class="r-sum">Total setup</span><strong class="r-tot">~${fmtMins(setupOf(s))}</strong></div>
+        <div class="receipt__sum"><span class="r-sum">Total setup</span><strong class="r-tot">${friendly(setupOf(s))}</strong></div>
         <div class="receipt__bar" aria-hidden="true"></div>
+        <p class="receipt__fine">Tool links may be affiliate links. We may earn a commission at no cost to you.</p>
       </div>
       <div class="res__lower">
         <div><h3>Setup steps</h3><ol class="checklist">${s.steps.map((x, i) => `<li><label for="st-${i}"><input type="checkbox" id="st-${i}"><span>${esc(x)}</span></label></li>`).join('')}</ol></div>
@@ -197,7 +261,7 @@
     const bud = $('.f-budget', b).value, a = $('.f-asst', b).value;
     const lim = bud === 'any' ? Infinity : +bud;
     const showCosts = b.classList.contains('show-costs');
-    let total = 0, unk = 0, setup = 0; const dropped = [];
+    let total = 0, setup = 0; const dropped = [], unknown = [];
     $$('.receipt__row', b).forEach(r => {
       const id = r.dataset.id, role = r.dataset.role;
       let show = role === 'tool' || (a ? id === a : role === 'assistant');
@@ -205,7 +269,7 @@
       const pc = $('.receipt__price', r); pc.textContent = showCosts ? pc.dataset.o : pc.dataset.setup; pc.classList.remove('is-free');
       if (show && !showCosts) { /* budget only applies once costs are shown */ }
       else if (show) {
-        if (p === null) { if (lim === 0 && !free) { show = false; dropped.push(r.querySelector('a').textContent); } else unk++; }
+        if (p === null) { if (lim === 0 && !free) { show = false; dropped.push(r.querySelector('a').textContent); } else unknown.push(r.querySelector('a').textContent); }
         else if (total + p > lim) { if (free) { pc.textContent = 'Free plan'; pc.classList.add('is-free'); } else { show = false; dropped.push(r.querySelector('a').textContent); } }
         else total += p;
       }
@@ -216,9 +280,10 @@
     $$('.t-val', b).forEach(el => countTo(el, total));
     $('.r-col', b).textContent = showCosts ? 'Starting prices' : 'Setup time';
     $('.r-sum', b).textContent = showCosts ? 'Total / month' : 'Total setup';
-    $('.r-tot', b).textContent = showCosts ? money(total) : '~' + fmtMins(setup);
-    $('.t-time', b).textContent = fmtMins(setup);
-    $('.t-unk', b).textContent = unk ? `Plus ${unk} tool${unk > 1 ? 's' : ''} marked "check site".` : '';
+    $('.r-tot', b).textContent = showCosts ? money(total) + (unknown.length ? '+' : '') : friendly(setup);
+    $('.t-time', b).textContent = friendly(setup);
+    $('.t-plus', b).textContent = unknown.length ? '+' : '';
+    $('.t-unk', b).textContent = unknown.length ? `Not included: ${unknown.join(', ')}. ${unknown.length > 1 ? "They don't" : "It doesn't"} publish a simple monthly price, and some features need a higher plan. Check before you budget.` : '';
     $('.res__drop', b).textContent = dropped.length ? `Left out to fit your budget: ${dropped.join(', ')}.` : '';
     $$('.asst__item', b).forEach(x => x.setAttribute('aria-pressed', String(x.dataset.a === a)));
   }
@@ -235,33 +300,64 @@
     requestAnimationFrame(f);
   }
 
+  // Show a stack in the results band (hidden until first used).
+  const band = $('#stack');
+  function showStack(slug) {
+    const st = bySlug[slug]; if (!st) return;
+    renderStack(st);
+    band.hidden = false;
+    announce(`Showing the ${st.label} stack.`);
+    band.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+  }
+  const choices = (title, intro, slugs, extra = '') => {
+    out.innerHTML = `<div class="res__miss"><p class="res__eyebrow">${esc(title)}</p><h2 class="res__title">${intro}</h2>${extra}
+      <div class="choices">${slugs.filter(x => bySlug[x]).map(x => `<button type="button" class="choice" data-show="${x}"><b>${esc(bySlug[x].label)}</b><span>${esc(bySlug[x].tools.map(t => t.name).join(' + '))}</span></button>`).join('')}</div>
+      <div class="res__cta"><a class="link-arrow" href="#scan">Or scan your business ${ARR}</a><a class="link-arrow" href="#tasks">See all 16 tasks ${ARR}</a></div></div>`;
+    band.hidden = false; announce(title);
+    band.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+  };
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-show]'); if (b) showStack(b.dataset.show);
+  });
+
   if (form) {
+    const msg = $('#finderMsg');
     $$('[data-ex]').forEach(b => b.addEventListener('click', () => { input.value = b.dataset.ex; form.requestSubmit(); }));
+    input.addEventListener('input', () => { if (msg) msg.textContent = ''; });
     form.addEventListener('submit', e => {
       e.preventDefault();
-      const s = match(input.value);
-      if (!s) {
-        out.innerHTML = `<div class="res__miss"><p class="res__eyebrow">No match yet</p><h2 class="res__title">We don't have a stack for that yet.</h2>
-          <p>Try one of the tasks below, or join the A.T.F.O. Newsletter and reply with your task. We read every one.</p>
-          <div class="res__cta"><a class="btn magnet" href="#tasks"><span>Browse by task</span>${ARR}</a><a class="link-arrow" href="#signup">Join the newsletter ${ARR}</a></div></div>`;
-        bindMagnets(out);
-      } else renderStack(s, false);
-      $('#stack').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+      const q = input.value.trim();
+      if (!q) { if (msg) msg.textContent = 'Type a task in your own words, or tap one of the examples below.'; input.focus(); return; }
+      const ranked = scoreAll(q);
+      const amb = AMBIG.find(([re]) => re.test(q.toLowerCase()));
+      const miss = MISSING.find(([re]) => re.test(q.toLowerCase()));
+      // A clear winner: show it. Two close matches: let the owner pick.
+      if (ranked.length && (!miss || ranked[0][1] >= 6)) {
+        if (ranked[1] && ranked[1][1] >= ranked[0][1] * 0.9) {
+          return choices('Two good fits', 'Which one is closer?', ranked.slice(0, 3).map(x => x[0].slug));
+        }
+        return showStack(ranked[0][0].slug);
+      }
+      if (miss) return choices('Not covered yet', `We don't have a stack for ${esc(miss[1])} yet.`, miss[2],
+        `<p>${miss[3] ? esc(miss[3]) + ' ' : ''}These are the closest stacks we have. Join the newsletter and reply with your task; it helps us decide what to cover next.</p>`);
+      if (amb) return choices('A few ways to go', esc(amb[2]), amb[1]);
+      if (INDUSTRY.test(q.toLowerCase())) return choices('Picks for your business', 'Tell us the task, or let us scan your site.',
+        ['scheduling', 'lead-follow-up', 'reviews'], '<p>Paste your website or Google Maps link in the free scan and we\'ll point to the gaps. Or start with one of these popular stacks.</p>');
+      choices('No match yet', "We don't have a stack for that yet.", ['lead-follow-up', 'invoicing', 'scheduling', 'social-media'],
+        '<p>Try describing the chore, like "chasing late invoices" or "answering the same emails". These are the most popular stacks. Join the newsletter and reply with your task; we read every one.</p>');
     });
-    // Open in a working state with a labeled example.
-    if (bySlug['lead-follow-up']) renderStack(bySlug['lead-follow-up'], true);
   }
 
   /* ---------- business scan ---------- */
   const scanForm = $('#scanForm'), scanOut = $('#scanOut'), scanUrl = $('#scanUrl');
   const CHECK_LABELS = { booking: 'Online booking', chat: 'Website chat', email: 'Email signup', crm: 'CRM or lead capture', form: 'Contact form', reviews: 'Reviews on your site', store: 'Online store', payments: 'Online payments', blog: 'Blog or articles', social: 'Social media links' };
   const EXAMPLE_SCAN = {
-    example: true, name: 'A neighborhood dental practice', url: 'https://yourbusiness.com', industry: 'Health and wellness', platform: 'WordPress',
+    example: true, caveat: 'This is a sample report. Paste your own link above to scan your business.', name: 'A neighborhood dental practice', url: 'https://yourbusiness.com', industry: 'Health and wellness', platform: 'WordPress',
     checks: Object.keys(CHECK_LABELS).map(k => ({ key: k, label: CHECK_LABELS[k], found: ['form', 'social', 'payments'].includes(k) })),
     recommendations: [
-      { slug: 'scheduling', why: "We didn't find a way to book online. Let patients pick a time themselves instead of calling or emailing back and forth." },
-      { slug: 'lead-follow-up', why: "Your site collects inquiries, but we didn't spot a CRM. New leads can slip through without an automatic follow up." },
-      { slug: 'website-chat', why: "There's no chat on your site. A chat assistant answers common questions after hours and collects contact details." },
+      { slug: 'scheduling', why: "We didn't spot online booking on your homepage. If patients still call or email to book, let them pick a time themselves." },
+      { slug: 'lead-follow-up', why: "Your site collects inquiries, but we didn't spot a CRM. Without one, leads can slip through before anyone follows up." },
+      { slug: 'website-chat', why: "We didn't spot a chat tool. A chat assistant answers common questions after hours and collects contact details." },
       { slug: 'client-intake', why: 'Intake forms that fill your records automatically save you typing for every new patient.' },
     ],
   };
@@ -275,19 +371,15 @@
     scanOut.innerHTML = reportFrame(host, d.example ? 'Example report' : 'Your report', `
       <div><p class="report__name">${esc(d.name || 'Your business')}</p>${meta.length ? `<div class="report__meta">${meta.map(m => `<span class="chip">${esc(m)}</span>`).join('')}</div>` : ''}</div>
       ${d.note ? `<p class="report__note">${esc(d.note)}</p>` : ''}
-      ${d.checks && d.checks.length ? `<div><h3>What we found on your site</h3><ul class="checks">${d.checks.map(c => `<li class="${c.found ? 'yes' : ''}">${esc(c.label)}${c.found ? '' : '<span class="sr"> not found</span>'}</li>`).join('')}</ul></div>` : ''}
-      ${recs.length ? `<div><h3>${d.checks && d.checks.length ? 'Fix these first' : 'Good places to start'}</h3><ol class="recs">${recs.map(r => {
+      ${d.checks && d.checks.length ? `<div><h3>What we spotted on your homepage</h3><ul class="checks">${d.checks.map(c => `<li class="${c.found ? 'yes' : ''}">${esc(c.label)}<span class="sr">${c.found ? ': found' : ': not spotted'}</span></li>`).join('')}</ul><p class="checks__key"><span class="checks__dot checks__dot--yes"></span>Found <span class="checks__dot"></span>Not spotted</p></div>` : ''}
+      ${d.caveat ? `<p class="report__caveat">${esc(d.caveat)}</p>` : ''}
+      ${recs.length ? `<div><h3>${d.checks && d.checks.length ? 'Where to start' : 'Popular starting points'}</h3><ol class="recs">${recs.map(r => {
         const st = bySlug[r.slug];
         return `<li class="rec"><h4>${esc(st.label)}</h4><p>${esc(r.why)}</p><span class="rec__go"><button type="button" data-show="${st.slug}">Show me this stack</button><a href="/best-ai-tools-for-${st.slug}/">Read the full guide →</a></span></li>`;
       }).join('')}</ol></div>` : ''}`);
   };
   if (scanOut) {
     renderReport(EXAMPLE_SCAN);
-    scanOut.addEventListener('click', e => {
-      const b = e.target.closest('[data-show]'); if (!b) return;
-      renderStack(bySlug[b.dataset.show], false);
-      $('#stack').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
-    });
   }
   if (scanForm) scanForm.addEventListener('submit', async e => {
     e.preventDefault();
@@ -302,7 +394,7 @@
     try {
       const r = await fetch('/api/scan', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) });
       const d = await r.json().catch(() => ({}));
-      if (r.ok && d.ok) renderReport(d);
+      if (r.ok && d.ok) { renderReport(d); announce(`Scan finished for ${d.name || url}.`); }
       else scanOut.innerHTML = reportFrame(url, 'Try again', `<p class="report__note">${esc(d.error || 'The scanner is not available right now. Please try again in a minute.')}</p>`);
     } catch (_) {
       scanOut.innerHTML = reportFrame(url, 'Try again', '<p class="report__note">We couldn\'t reach the scanner. Check your connection and try again.</p>');
@@ -331,9 +423,10 @@
   const onScrollWeek = () => {
     if (!weekSec || !blocks.length) return;
     const r = weekSec.getBoundingClientRect();
-    const total = r.height - innerHeight;
-    const p = total > 0 ? Math.min(1, Math.max(0, -r.top / total)) : 1;
-    const n = reduce ? blocks.length : Math.round(p * 1.15 * blocks.length);
+    const sticky = getComputedStyle($('.week__sticky')).position === 'sticky';
+    const total = sticky ? r.height - innerHeight : r.height * 0.7;
+    const p = Math.min(1, Math.max(0, sticky ? -r.top / total : (innerHeight * 0.8 - r.top) / total));
+    const n = paused ? blocks.length : Math.round(p * 1.15 * blocks.length);
     if (n === lastOn) return; lastOn = n;
     let hrs = 0;
     blocks.forEach((b, i) => { const on = i < n; b.classList.toggle('on', on); if (on) hrs += +b.dataset.h; });
@@ -341,12 +434,7 @@
   };
 
   /* ---------- task index ---------- */
-  const CAT = {
-    sales: ['lead-follow-up', 'real-estate-leads', 'reviews', 'client-intake', 'proposals-contracts'],
-    money: ['invoicing', 'bookkeeping', 'payroll'],
-    ops: ['scheduling', 'meeting-notes', 'customer-support-email', 'website-chat', 'online-store-support'],
-    marketing: ['social-media', 'email-marketing', 'writing-content'],
-  };
+  const CAT = window.CATS || {};
   const catOf = slug => Object.keys(CAT).find(k => CAT[k].includes(slug)) || 'ops';
   const idx = $('#index'), peek = $('#peek');
   if (idx) {
@@ -354,7 +442,7 @@
       return `<li data-cat="${catOf(s.slug)}"><a class="row" href="/best-ai-tools-for-${s.slug}/" data-slug="${s.slug}">
         <span class="row__name">${esc(s.label)}</span>
         <span class="row__tools">${s.tools.map(t => `<span>${esc(t.name)}</span>`).join('')}</span>
-        <span class="row__cost"><small>Setup</small>~${fmtMins(setupOf(s))}</span>
+        <span class="row__cost"><small>Setup</small>${friendly(setupOf(s))}</span>
         <span class="row__go" aria-hidden="true">${ARR}</span></a></li>`;
     }).join('');
     $$('.pill').forEach(p => p.addEventListener('click', () => {
@@ -393,7 +481,6 @@
     const open = c => $$('.card', deck).forEach(x => { x.classList.toggle('is-open', x === c); x.setAttribute('aria-expanded', String(x === c)); });
     $$('.card', deck).forEach(c => {
       c.addEventListener('click', () => open(c));
-      c.addEventListener('focus', () => open(c));
       if (fine) c.addEventListener('pointerenter', () => open(c));
     });
   }
@@ -447,7 +534,7 @@
       }
       ctx.beginPath(); ctx.arc(cx, cy, 14, 0, Math.PI * 2); ctx.fillStyle = hl; ctx.fill();
     };
-    const loop = () => { if (vis) { t += 0.012; draw(); } requestAnimationFrame(loop); };
+    const loop = () => { if (vis && !paused) { t += 0.012; draw(); } requestAnimationFrame(loop); };
     size(); draw();
     addEventListener('resize', () => { size(); draw(); });
     if (!reduce) {
@@ -497,9 +584,12 @@
   $$('form.js-api').forEach(f => f.addEventListener('submit', async e => {
     e.preventDefault();
     const msg = f.parentNode.querySelector('.form-msg'), b = f.querySelector('button'), say = t => { if (msg) msg.textContent = t; };
+    const data = Object.fromEntries(new FormData(f));
+    // Bot trap: people never see this field. Its name avoids browser autofill.
+    if (data.hp_check) { f.reset(); say('Thanks! You are on the list.'); return; }
     b.disabled = true; say('Sending...');
     try {
-      const r = await fetch(f.action, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.fromEntries(new FormData(f))) });
+      const r = await fetch(f.action, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: data.email, company: '' }) });
       const d = await r.json().catch(() => ({}));
       if (r.ok && d.ok) { f.reset(); say(d.message || 'Thanks! You are on the list.'); }
       else say(d.error || 'Something went wrong. Please try again.');

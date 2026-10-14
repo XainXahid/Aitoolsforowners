@@ -33,7 +33,7 @@ Task slugs: `lead-follow-up`, `real-estate-leads`, `invoicing`, `bookkeeping`, `
 
 | Field | Limit | How to write it |
 | --- | --- | --- |
-| `subject` | under 60 characters | Name the outcome or the time it saves. Patterns: "The 55-minute fix for leads that go cold", "Stop chasing invoices by hand", "Your inbox, answered before lunch". No prices, no ALL CAPS, no emoji spam, no "Issue #12". |
+| `subject` | under 60 characters | Name the outcome or the time it saves. Patterns: "The one-hour fix for leads that go cold", "Stop chasing invoices by hand", "Your inbox, answered before lunch". No prices, no ALL CAPS, no emoji spam, no "Issue #12". |
 | `preheader` | under 110 characters | Adds to the subject; never repeats it. Example: "Three tools, three steps, and a prompt that writes your follow ups for you." |
 | `headline` | one line, about 8 words | The problem in the owner's words, said boldly: "Stop losing leads you already paid for." |
 | `intro` | 2 short paragraphs, under 90 words total | First name the pain in one sentence. Then say what the stack does and how long it takes to set up. |

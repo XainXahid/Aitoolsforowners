@@ -20,16 +20,9 @@ ROOT = Path(__file__).resolve().parent.parent
 PUB = ROOT / "public"  # what Cloudflare Pages publishes
 SITE = "https://aitoolsforowners.com"
 TODAY = datetime.date.today().isoformat()
-DESC = ("AIToolsForOwners (A.T.F.O., short for AI Tools For Owners) is a free tool that "
-        "recommends AI tool stacks, with setup steps, for small business owners.")
+DESC = ("AI Tools For Owners (A.T.F.O.) is a free tool that recommends AI and automation "
+        "tool stacks, with setup steps, for small business owners.")
 
-# Task categories for the index filters. Keep in sync with CAT in assets/main.js.
-CAT = {
-    "sales": ["lead-follow-up", "real-estate-leads", "reviews", "client-intake", "proposals-contracts"],
-    "money": ["invoicing", "bookkeeping", "payroll"],
-    "ops": ["scheduling", "meeting-notes", "customer-support-email", "website-chat", "online-store-support"],
-    "marketing": ["social-media", "email-marketing", "writing-content"],
-}
 KIND = {"claude": "Writer", "gemini": "Workspace native", "grokbot": "Runs on a schedule", "chatgpt": "All-rounder"}
 PAGES = [  # pages on the live site that are not generated here
     ("/compare-ai-assistants-for-small-business/", "Claude vs Gemini vs Grok Bot vs ChatGPT for small business"),
@@ -42,13 +35,23 @@ PAGES = [  # pages on the live site that are not generated here
 
 
 def load_data():
+    """Read window.X = <JSON> assignments from data.js. Uses a real JSON decoder,
+    so apostrophes and any formatting inside strings are safe."""
     src = (PUB / "assets/data.js").read_text()
+    dec = json.JSONDecoder()
     out = {}
-    for name in ("STACKS", "ASST", "AORD"):
-        m = re.search(r"window\.%s=(.*?);(?=window\.|\s*$)" % name, src, re.S)
-        raw = m.group(1).strip().replace("'", '"')
-        out[name] = json.loads(raw)
+    for name in ("STACKS", "ASST", "AORD", "CATS", "CHECKED"):
+        i = src.find(f"window.{name}=")
+        if i < 0:
+            raise SystemExit(f"data.js is missing window.{name}")
+        out[name], _ = dec.raw_decode(src, i + len(f"window.{name}="))
     return out["STACKS"], out["ASST"], out["AORD"]
+
+
+def load_extra():
+    src = (PUB / "assets/data.js").read_text()
+    dec = json.JSONDecoder()
+    return {n: dec.raw_decode(src, src.find(f"window.{n}=") + len(f"window.{n}="))[0] for n in ("CATS", "CHECKED")}
 
 
 def minutes(s):
@@ -61,6 +64,23 @@ def fmt_minutes(m):
     if not h:
         return f"{r} min"
     return f"{h} hr" + (f" {r} min" if r else "")
+
+
+def friendly(m):
+    """Round a setup estimate to an honest range instead of false precision."""
+    if m <= 35:
+        return "about 30 minutes"
+    if m <= 70:
+        return "about an hour"
+    if m <= 120:
+        return "1 to 2 hours"
+    if m <= 180:
+        return "2 to 3 hours"
+    return "half a day"
+
+
+def friendly_short(m):
+    return "~30 min" if m <= 35 else "~1 hr" if m <= 70 else "1–2 hrs" if m <= 120 else "2–3 hrs" if m <= 180 else "Half a day"
 
 
 def setup_total(stack):
@@ -77,7 +97,7 @@ def names(stack):
 
 
 def cat_of(slug):
-    return next((k for k, v in CAT.items() if slug in v), "ops")
+    return next((k for k, v in load_extra()["CATS"].items() if slug in v), "ops")
 
 
 e = html.escape
@@ -92,7 +112,7 @@ def gen_index(stacks):
             f'<li data-cat="{cat_of(s["slug"])}"><a class="row" href="/best-ai-tools-for-{s["slug"]}/" data-slug="{s["slug"]}">'
             f'<span class="row__name">{e(s["label"])}</span>'
             f'<span class="row__tools">{tools}</span>'
-            f'<span class="row__cost"><small>Setup</small>~{fmt_minutes(setup_total(s))}</span>'
+            f'<span class="row__cost"><small>Setup</small>{friendly_short(setup_total(s))}</span>'
             f'<span class="row__go" aria-hidden="true">{ARR}</span></a></li>')
     return "\n" + "\n".join(rows) + "\n"
 
@@ -118,7 +138,7 @@ def faq_items(stacks, asst, aord):
     ast = [f"{asst[a]['name']}: {asst[a]['best']}" for a in aord]
     return [
         ("What is A.T.F.O. (AI Tools For Owners)?",
-         [f"A.T.F.O., short for AI Tools For Owners, is a free website at aitoolsforowners.com that recommends AI tool stacks for small business owners. "
+         [f"AI Tools For Owners (A.T.F.O.) is a free website at aitoolsforowners.com that recommends AI and automation tool stacks for small business owners. "
           "You type the task that takes up your time, and it shows which tools handle it, why each one is there, how long setup takes, and the steps to set it up. There is no signup."], None),
         ("What are the best AI tools for small business owners?",
          ["It depends on the job you want off your plate. These are our picks for the 16 tasks owners ask about most:"], best),
@@ -126,13 +146,15 @@ def faq_items(stacks, asst, aord):
          ["Pick the assistant that fits how you already work. Here is what each one is best for:"], ast + [
           "Full comparison: aitoolsforowners.com/compare-ai-assistants-for-small-business/"]),
         ("How long does it take to set up an AI tool stack?",
-         [f"Most stacks take between {fmt_minutes(totals[0])} and {fmt_minutes(totals[-1])} of setup time in total. "
+         [f"Connecting the tools in most stacks takes from {friendly(totals[0])} to {friendly(totals[-1]).replace('about ', '')}. "
+          "Writing your own templates, emails or content on top of that takes longer, so plan an afternoon. "
           "Every tool is marked Easy or Medium, and each stack comes with a short setup checklist in plain English."], None),
         ("Is AIToolsForOwners free?",
          ["Yes. The tool finder, task pages and guides are free, and you don't need an account. "
           "Some links are affiliate links, which may earn us a commission at no cost to you."], None),
         ("Do the recommended AI tools cost money?",
-         ["Many of the tools have free plans you can start on. Each task page lists current plans and starting prices, so you can check costs before you sign up for anything."], None),
+         ["Many of the tools have free plans you can start on. In the stack finder, tap See monthly costs for the starting price of each tool. "
+          "Some tools, such as Grok Bot, don't publish a simple price or need a higher plan for automation, so check their sites before you budget."], None),
     ]
 
 
@@ -151,7 +173,7 @@ def gen_faq(items):
 
 def gen_jsonld(stacks, items):
     org = {"@context": "https://schema.org", "@type": "Organization", "@id": SITE + "/#org", "name": "AIToolsForOwners",
-           "alternateName": ["A.T.F.O.", "ATFO", "AI Tools For Owners"], "url": SITE, "logo": SITE + "/favicon.svg", "description": DESC}
+           "alternateName": ["A.T.F.O.", "ATFO", "AI Tools For Owners"], "url": SITE, "logo": SITE + "/logo.png", "description": DESC}
     site = {"@context": "https://schema.org", "@type": "WebSite", "@id": SITE + "/#website", "name": "AIToolsForOwners",
             "alternateName": ["A.T.F.O.", "AI Tools For Owners"], "url": SITE, "description": DESC, "publisher": {"@id": SITE + "/#org"}, "inLanguage": "en"}
     app = {"@context": "https://schema.org", "@type": "WebApplication", "name": "A.T.F.O. AI tool stack finder", "url": SITE + "/#finder",
@@ -201,14 +223,15 @@ def gen_llms(stacks, asst, aord):
 
 def gen_llms_full(stacks, asst, aord):
     L = ["# A.T.F.O. (AI Tools For Owners): every tool stack", "", f"> {DESC}", "",
-         f"Source: {SITE} . Last updated {TODAY}. Prices are starting prices and change; check each tool's official site. "
+         f"Source: {SITE} . Prices last checked {load_extra()['CHECKED']}. Prices are starting prices and change; check each tool's official site. "
          "Some links on the site are affiliate links.", ""]
     for s in stacks:
         L += [f"## Best AI tools for {s['task']}", f"URL: {SITE}/best-ai-tools-for-{s['slug']}/",
-              f"Total setup time: about {fmt_minutes(setup_total(s))}. Difficulty: {difficulty(s)}.", "", "Tools:"]
+              f"Time to connect the tools: {friendly(setup_total(s))}. Difficulty: {difficulty(s)}.", "", "Tools:"]
         for t in s["tools"]:
             free = " Free plan available." if t["free"] == "1" else ""
-            L.append(f"- {t['name']}: {t['why']} Setup {t['setup']}, {t['diff']}. Starting price: {t['price']}.{free}")
+            price = t["price"] if t["num"] else "not published as a simple monthly price; check the official site"
+            L.append(f"- {t['name']}: {t['why']} Setup {t['setup']}, {t['diff']}. Starting price: {price}.{free}")
         L += ["", "Setup steps:"] + [f"{i + 1}. {x}" for i, x in enumerate(s["steps"])]
         L += ["", "How each AI assistant handles this task:"]
         for i, a in enumerate(aord):
@@ -253,6 +276,17 @@ Sitemap: https://aitoolsforowners.com/sitemap.xml
 """
 
 
+def bust(doc):
+    """Add ?v=<content hash> to asset links so a deploy never mixes old and new files."""
+    import hashlib
+
+    def ver(m):
+        f = PUB / m.group(1).lstrip("/")
+        h = hashlib.sha1(f.read_bytes()).hexdigest()[:8] if f.exists() else "0"
+        return f'{m.group(0).split("=")[0]}="{m.group(1)}?v={h}"'
+    return re.sub(r'(?:src|href)="(/assets/[^"?]+\.(?:css|js))(?:\?v=[0-9a-f]+)?"', ver, doc)
+
+
 def main():
     stacks, asst, aord = load_data()
     items = faq_items(stacks, asst, aord)
@@ -262,7 +296,9 @@ def main():
     doc = put(doc, "index", gen_index(stacks))
     doc = put(doc, "deck", gen_deck(asst, aord))
     doc = put(doc, "faq", gen_faq(items))
-    p.write_text(doc)
+    p.write_text(bust(doc))
+    nf = PUB / "404.html"
+    nf.write_text(bust(nf.read_text()))
     (PUB / "llms.txt").write_text(gen_llms(stacks, asst, aord))
     (PUB / "llms-full.txt").write_text(gen_llms_full(stacks, asst, aord))
     (PUB / "sitemap.xml").write_text(gen_sitemap(stacks))

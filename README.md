@@ -45,8 +45,10 @@ The simplest path is to copy everything in `public/` into the existing Cloudflar
 
 ## Editing content
 
-- **Tool stacks, prices, setup steps:** edit `public/assets/data.js`, then run `python3 scripts/build.py`. The finder, the to-do pad, the week story and the ticker read the data at runtime. The task index, assistant cards, FAQ, structured data, `llms.txt`, `llms-full.txt` and `sitemap.xml` are written into the files by the script, so crawlers see them without running JavaScript.
-- **Task categories** (Sales / Money / Operations / Marketing filters): the `CAT` map in `public/assets/main.js` and in `scripts/build.py` (keep both the same).
+- **Tool stacks, prices, setup steps:** edit `public/assets/data.js`, then run `python3 scripts/build.py`. **Run it after any change to the CSS or JS too:** it stamps a version on each asset link, so visitors never get a mix of old and new files (assets are cached for a year). The finder, the to-do pad, the week story and the ticker read the data at runtime. The task index, assistant cards, FAQ, structured data, `llms.txt`, `llms-full.txt` and `sitemap.xml` are written into the files by the script, so crawlers see them without running JavaScript.
+- **Task categories** (Sales / Money / Operations / Marketing filters): `window.CATS` in `public/assets/data.js`.
+- **Date prices were last checked:** `window.CHECKED` in `public/assets/data.js`. Update it whenever you re-check prices.
+- **Finder phrasing:** the `SYN` (extra words per stack), `AMBIG` ("which one?") and `MISSING` (tasks we don't cover yet) lists in `public/assets/main.js`.
 - **Hero to-do list items:** the `PAD` array in `public/assets/main.js`.
 - **Week story blocks:** the `WEEK` array in `public/assets/main.js`.
 
@@ -60,7 +62,11 @@ Optional settings (Cloudflare Pages → your project → Settings):
 - **`SCANS`** (KV namespace binding). Saves every scan for 180 days, so you can see which businesses scanned and follow up.
 - **Rate limit.** Add a Cloudflare rate-limiting rule for `/api/scan` (for example 10 requests per minute per IP) so nobody can use the scanner to hammer other sites.
 
-The scanner only fetches public `http`/`https` pages on ports 80 and 443, refuses IP addresses and internal hostnames, stops after 9 seconds, and reads at most 1.5 MB.
+The scanner only fetches public `http`/`https` pages on ports 80 and 443, checks every redirect hop the same way, refuses IP addresses and internal hostnames, stops after 9 seconds, reads at most 1.5 MB, and limits each visitor to 10 scans a minute.
+
+**Cloudflare plan:** the free plan allows 10 ms of processing per request. The analysis was rewritten to fit (2 to 10 ms on real homepages in testing), but large sites can go over and fail. The Workers Paid plan ($5/month) removes that risk; it's the safer choice once the scan gets real traffic.
+
+**Accuracy:** it reads the homepage only, so tools that load later (some booking and chat widgets) can be missed. Reports say "we didn't spot" rather than "you don't have", and show that caveat.
 
 ## Newsletter
 
@@ -82,6 +88,6 @@ The homepage leads with setup time, not cost. Prices only appear in the stack fi
 
 ## Design notes
 
-- Fonts (Google Fonts): Bricolage Grotesque (display), Geist (body), Geist Mono (prices and labels), Caveat (handwritten notes).
+- Fonts are self-hosted in `public/assets/fonts/` (no requests to Google, latin characters only, about 145 KB in total): Bricolage Grotesque (display), Geist (body), Geist Mono (labels), Caveat (handwritten notes). All are SIL Open Font License.
 - Colors are CSS variables at the top of `public/assets/site.css` (electric violet `--pen`, lime highlighter `--hl`, hot pink `--pink`); dark mode follows the visitor's system setting.
 - All motion respects `prefers-reduced-motion`.
