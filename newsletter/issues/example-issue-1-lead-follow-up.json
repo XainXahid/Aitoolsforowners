@@ -37,10 +37,10 @@
   "steps": [
     "Create a free HubSpot account and import your lead list.",
     "Connect your web form to HubSpot with a Zapier zap.",
-    "Write a 3 email follow up sequence with ChatGPT, then load it into HubSpot."
+    "Write a 3-email follow-up sequence with ChatGPT, then load it into HubSpot."
   ],
   "prompt": {
-    "text": "You're my sales assistant. Write a friendly 3-email follow up for a lead who asked about [service]. Email 1 goes out today, email 2 in 3 days, email 3 in a week. Keep each under 90 words, sound like a real person, and end each with one easy question.",
+    "text": "You're my sales assistant. Write a friendly 3-email follow-up for a lead who asked about [service]. Email 1 goes out today, email 2 in 3 days, email 3 in a week. Keep each under 90 words, sound like a real person, and end each with one easy question.",
     "works_in": "Claude, ChatGPT, Gemini or Grok"
   },
   "tip": {

@@ -46,6 +46,10 @@ Task slugs: `lead-follow-up`, `real-estate-leads`, `invoicing`, `bookkeeping`, `
 | `mailing_address` | required | The business's real postal address. Commercial email law (such as CAN-SPAM in the US) requires it. |
 | `unsubscribe_url` | required | The email platform's unsubscribe merge tag, for example `*|UNSUB|*` in Mailchimp. Check your platform's help docs for its tag. |
 
+## Header logo
+
+The email header shows the "Ai Tools For Owners" logo as an image at `https://aitoolsforowners.com/email/logo-white.png` (the file is `public/email/logo-white.png` in the website). Deploy the website first so the image is live; until then it shows the text "Ai Tools For Owners" instead. To use a different image, set `logo_url` in the issue's JSON file.
+
 ## Voice
 
 - Plain English, short sentences, second person ("you"). Write like a helpful friend who runs a business, not a tech blog.

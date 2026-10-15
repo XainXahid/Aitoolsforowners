@@ -1,4 +1,4 @@
-A.T.F.O. — Issue 1 · October 20, 2026
+Ai Tools For Owners — Issue 1 · October 20, 2026
 
 LEAD FOLLOW-UP
 Stop losing leads you already paid for.
@@ -18,10 +18,10 @@ Time to connect the tools: about an hour.
 SET IT UP
 1. Create a free HubSpot account and import your lead list.
 2. Connect your web form to HubSpot with a Zapier zap.
-3. Write a 3 email follow up sequence with ChatGPT, then load it into HubSpot.
+3. Write a 3-email follow-up sequence with ChatGPT, then load it into HubSpot.
 
 STEAL THIS PROMPT
-You're my sales assistant. Write a friendly 3-email follow up for a lead who asked about [service]. Email 1 goes out today, email 2 in 3 days, email 3 in a week. Keep each under 90 words, sound like a real person, and end each with one easy question.
+You're my sales assistant. Write a friendly 3-email follow-up for a lead who asked about [service]. Email 1 goes out today, email 2 in 3 days, email 3 in a week. Keep each under 90 words, sound like a real person, and end each with one easy question.
 
 QUICK WIN: REPLY WITHIN MINUTES
 Leads go cold fast. Even a one-line "Got your message, I'll call you at 3" keeps the conversation going.

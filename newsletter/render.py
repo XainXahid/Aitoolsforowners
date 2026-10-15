@@ -32,6 +32,7 @@ from build import load_data, setup_total, friendly  # noqa: E402
 
 DEFAULTS = {
     "site_url": SITE + "/",
+    "logo_url": SITE + "/email/logo-white.png",  # hosted with the website (public/email/)
     "scan_url": SITE + "/#scan",
     "unsubscribe_url": "WRITE: your email platform's unsubscribe merge tag, e.g. *|UNSUB|* in Mailchimp",
     "mailing_address": "WRITE: your business mailing address (required by law in commercial email)",
@@ -119,7 +120,7 @@ def draft(slug, issue):
         "cta_label": "See the full stack",
         "cta_url": f"{SITE}/best-ai-tools-for-{slug}/",
         "web_url": f"{SITE}/newsletter/",
-        **{k: v for k, v in DEFAULTS.items() if k not in ("site_url", "scan_url")},
+        **{k: v for k, v in DEFAULTS.items() if k not in ("site_url", "scan_url", "logo_url")},
     }
     out = HERE / "issues" / f"issue-{issue}-{slug}.json"
     out.parent.mkdir(exist_ok=True)
@@ -181,7 +182,7 @@ def build(path):
 
 
 def plain_text(d):
-    L = [f"A.T.F.O. — Issue {d['issue_number']} · {d['date']}", "", d["task_label"].upper(), d["headline"], ""]
+    L = [f"Ai Tools For Owners — Issue {d['issue_number']} · {d['date']}", "", d["task_label"].upper(), d["headline"], ""]
     L += d["intro"] + ["", "THE STACK"]
     L += [f"- {t['name']} ({t['setup']} setup, {t['difficulty']}): {t['why']}\n  {t['url']}" for t in d["tools"]]
     L += [f"Time to connect the tools: {d['setup_total']}.", "", "SET IT UP"] + [f"{s['n']}. {s['text']}" for s in d["steps"]]
