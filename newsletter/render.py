@@ -32,7 +32,7 @@ from build import load_data, setup_total, friendly  # noqa: E402
 
 DEFAULTS = {
     "site_url": SITE + "/",
-    "logo_url": SITE + "/email/logo-white.png",  # hosted with the website (public/email/)
+    "logo_url": SITE + "/email/logo.png",  # hosted with the website (public/email/)
     "scan_url": SITE + "/#scan",
     "unsubscribe_url": "WRITE: your email platform's unsubscribe merge tag, e.g. *|UNSUB|* in Mailchimp",
     "mailing_address": "WRITE: your business mailing address (required by law in commercial email)",

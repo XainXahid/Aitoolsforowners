@@ -48,7 +48,7 @@ Task slugs: `lead-follow-up`, `real-estate-leads`, `invoicing`, `bookkeeping`, `
 
 ## Header logo
 
-The email header shows the "Ai Tools For Owners" logo as an image at `https://aitoolsforowners.com/email/logo-white.png` (the file is `public/email/logo-white.png` in the website). Deploy the website first so the image is live; until then it shows the text "Ai Tools For Owners" instead. To use a different image, set `logo_url` in the issue's JSON file.
+The email header shows the "Ai Tools For Owners" logo as an image at `https://aitoolsforowners.com/email/logo.png` (the file is `public/email/logo.png` in the website). Deploy the website first so the image is live; until then it shows the text "Ai Tools For Owners" instead. To use a different image, set `logo_url` in the issue's JSON file.
 
 ## Voice
 
